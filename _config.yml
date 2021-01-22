@@ -49,7 +49,7 @@ gems: [jekyll-paginate]
 # although redcarpet can auto highlight code, the lack of header-id make the catalog impossible, so I switch to kramdown
 # document: http://jekyllrb.com/docs/configuration/#kramdown
 markdown: kramdown
-highlighter: rouge
+highlighter: -rouge
 kramdown:
   input: GFM                            # use Github Flavored Markdown !important
 
@@ -62,8 +62,8 @@ kramdown:
 # Gitalk
 gitalk:
   enable: true    #是否开启Gitalk评论
-  clientID: f2c84e7629bb1446c1a4                            #生成的clientID
-  clientSecret: ca6d6139d1e1b8c43f8b2e19492ddcac8b322d0d    #生成的clientSecret
+  clientID: 470c2773a7eaf9a61818                            #生成的clientID
+  clientSecret: 807fce76e2406e3d8de7aa2769dae4226ad4c071    #生成的clientSecret
   repo: myzhibei.github.io    #仓库名称
   owner: myzhibei   #github用户名
   admin: myzhibei
@@ -102,7 +102,7 @@ friends: [
         title: "ZHIBEI",
         href: "http://myzhibei.xyz"
     },{
-        title: "简书·BY",
+        title: "简书·MYZHIBEI",
         href: "http://www.jianshu.com/u/e71990ada2fd"
     },{
         title: "Apple",
