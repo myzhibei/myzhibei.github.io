@@ -1,115 +1,200 @@
 ---
 ---
 
-@string{aps = {American Physical Society,}}
+@string{ieee = {IEEE,}}
+@string{acm = {ACM,}}
 
-@book{einstein1920relativity,
-  title     = {Relativity: the Special and General Theory},
-  author    = {Einstein, Albert},
-  year      = {1920},
-  publisher = {Methuen & Co Ltd},
-  html      = {relativity.html}
+@inproceedings{lin2026flexpipe,
+  abbr={EuroSys},
+  title={FlexPipe: Adapting Dynamic LLM Serving Through Inflight Pipeline Refactoring in Fragmented Serverless Clusters},
+  author={Lin, Yanying and Peng, Shijie and Lu, Chengzhi and Xu, Chengzhong and Ye, Kejiang},
+  booktitle={Proceedings of the 21st European Conference on Computer Systems},
+  year={2026},
+  selected={true},
+  html={https://arxiv.org/abs/2510.11938},
+  pdf={https://arxiv.org/pdf/2510.11938},
+  bibtex_show={true},
+  abstract={
+  We find that for pipeline inference, the optimal online pipeline structure varies greatly depending on the incoming request distribution. Longer pipelines can absorb load spikes by dispersing demand, while shorter pipelines reduce communication overhead. Dynamically adjusting the pipeline structure according to the request distribution is an effective approach in serverless environments. 
+  },
+  show_in_publications={true},
 }
 
-@book{einstein1956investigations,
-  bibtex_show = {true},
-  title       = {Investigations on the Theory of the Brownian Movement},
-  author      = {Einstein, Albert},
-  year        = {1956},
-  publisher   = {Courier Corporation},
-  preview     = {brownian-motion.gif}
+
+@inproceedings{lin2025understanding,
+  abbr={SoCC},
+  title={Understanding Diffusion Model Serving in Production: A Top-Down Analysis of Workload, Scheduling, and Resource Efficiency},
+  author={Lin, Yanying and Wu, Shuaipeng and Luo, Shutian and Xu, Hong and Shen, Haiying and Ma, Chong and Shen, Min and Chen, Le and Xu, Chengzhong and Qu, Lin and others},
+  booktitle={Proceedings of the 2025 ACM Symposium on Cloud Computing},
+  pages={1--15},
+  year={2025},
+  pdf={SoCC25.pdf},
+  slides={SoCC25_Slides.pdf},
+  bibtex_show={true},
+  abstract={
+    The main insights of this work are obtained from production systems. It focuses on the performance of online inference, middleware, and hardware layers, as well as the relationships between these three components.
+    We find that skewed request distributions force systems to stress network and cache layers, resulting in poor resource locality and reduced system performance.
+  },
+  show_in_publications={false},
 }
 
-@article{einstein1950meaning,
-  abbr        = {AJP},
-  bibtex_show = {true},
-  title       = {The meaning of relativity},
-  author      = {Einstein, Albert and Taub, AH},
-  journal     = {American Journal of Physics},
-  volume      = {18},
-  number      = {6},
-  pages       = {403--404},
-  year        = {1950},
-  publisher   = {American Association of Physics Teachers}
+@inproceedings{lin2024quart,
+  abbr={ICDCS},
+  title={QUART: Latency-Aware FaaS System for Pipelining Large Model Inference},
+  author={Lin, Yanying and Li, Yanbo and Peng, Shijie and Tang, Yingfei and Luo, Shutian and Shen, Haiying and Xu, Chengzhong and Ye, Kejiang},
+  booktitle={Proceedings of the 44th IEEE International Conference on Distributed Computing Systems},
+  year={2024},
+  selected={false},
+  bibtex_show={true},
+  pdf={quart.pdf},
+  abstract={
+  We find that when using pipeline inference for LLMs, each stage exhibits significant load differences due to varying resource allocation and throughput across different workloads. For example, under stable or bursty traffic patterns, throughput disparities between upstream and downstream stages can create performance-critical bottlenecks in the pipeline.
+  },
+  show_in_publications={true},
 }
 
-@article{PhysRev.47.777,
-  abbr              = {PhysRev},
-  title             = {Can Quantum-Mechanical Description of Physical Reality Be Considered Complete?},
-  author            = {Einstein*†, A. and Podolsky*, B. and Rosen*, N.},
-  abstract          = {In a complete theory there is an element corresponding to each element of reality. A sufficient condition for the reality of a physical quantity is the possibility of predicting it with certainty, without disturbing the system. In quantum mechanics in the case of two physical quantities described by non-commuting operators, the knowledge of one precludes the knowledge of the other. Then either (1) the description of reality given by the wave function in quantum mechanics is not complete or (2) these two quantities cannot have simultaneous reality. Consideration of the problem of making predictions concerning a system on the basis of measurements made on another system that had previously interacted with it leads to the result that if (1) is false then (2) is also false. One is thus led to conclude that the description of reality as given by a wave function is not complete.},
-  journal           = {Phys. Rev.},
-  location          = {New Jersey},
-  volume            = {47},
-  issue             = {10},
-  pages             = {777--780},
-  numpages          = {0},
-  year              = {1935},
-  month             = {May},
-  publisher         = aps,
-  doi               = {10.1103/PhysRev.47.777},
-  url               = {https://link.aps.org/doi/10.1103/PhysRev.47.777},
-  html              = {https://journals.aps.org/pr/abstract/10.1103/PhysRev.47.777},
-  pdf               = {example_pdf.pdf},
-  altmetric         = {248277},
-  dimensions        = {true},
-  google_scholar_id = {qyhmnyLat1gC},
-  video             = {https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ},
-  additional_info   = {. *More Information* can be [found here](https://github.com/alshedivat/al-folio/)},
-  annotation        = {* Example use of superscripts<br>† Albert Einstein},
-  selected          = {true},
-  inspirehep_id     = {3255}
+@inproceedings{lin2024plank,
+  abbr={ICWS},
+  title={Planck: Optimizing LLM Inference Performance in Pipeline Parallelism with Fine-Grained SLO Constraint},
+  author={Lin, Yanying and Peng, Shijie and Wu, Shuaipeng and Li, Yanbo and Lu, Chengzhi and Xu, Chengzhong and Ye, Kejiang},
+  booktitle={Proceedings of the 31st IEEE International Conference on Web Services},
+  year={2024},
+  selected={true},
+  abstract={
+  This work proposes preliminary ideas for SLO allocation in LLM pipeline parallelism. We explore fine-grained SLO constraint mechanisms to optimize inference performance by intelligently distributing service level objectives across different pipeline stages, enabling more efficient resource utilization and better meeting diverse application requirements.
+  },
+  show_in_publications={true},
 }
 
-@article{einstein1905molekularkinetischen,
-  title     = {{\"U}ber die von der molekularkinetischen Theorie der W{\"a}rme geforderte Bewegung von in ruhenden Fl{\"u}ssigkeiten suspendierten Teilchen},
-  author    = {Einstein, A.},
-  journal   = {Annalen der physik},
-  volume    = {322},
-  number    = {8},
-  pages     = {549--560},
-  year      = {1905},
-  publisher = {Wiley Online Library}
+@inproceedings{lin2022esbench,
+  abbr={HPCC},
+  title={ESBench: Understanding Deep Learning Inference Overheads for Edge Serverless},
+  author={Lin, Yanying* and Chen, Junhong and Wang, Yang and Ye, Kejiang},
+  booktitle={Proceedings of the 24th IEEE International Conference on High Performance Computing and Communications},
+  year={2022},
+  show_in_publications={false},
 }
 
-@article{einstein1905movement,
-  abbr    = {Ann. Phys.},
-  title   = {Un the movement of small particles suspended in statiunary liquids required by the molecular-kinetic theory 0f heat},
-  author  = {Einstein, A.},
-  journal = {Ann. Phys.},
-  volume  = {17},
-  pages   = {549--560},
-  year    = {1905}
+@inproceedings{lin2021bbserverless,
+  abbr={CLOUD},
+  title={BBServerless: Burst Traffic Benchmark for Serverless},
+  author={Lin, Yanying and Ye, Kejiang and Xu, Chengzhong},
+  booktitle={Proceedings of the 14th IEEE International Conference on Cloud Computing},
+  year={2021},
+  abstract={
+  This work presents an early-stage performance evaluation benchmark for Serverless computing, conducting comprehensive performance assessments of various emerging workloads within open-source FaaS frameworks. The primary objective is to identify which Serverless architectures are most suitable for deployment in private cloud environments, representing a laboratory-level exploratory study that evaluates different FaaS platforms and their performance characteristics under diverse workload conditions.
+  },
+  show_in_publications={false},
 }
 
-@article{einstein1905electrodynamics,
-  title  = {On the electrodynamics of moving bodies},
-  author = {Einstein, A.},
-  year   = {1905}
+@inproceedings{lin2020lbnn,
+  abbr={ICPADS},
+  title={LBNN: Perceives the Change of Core Telecommunications Network State via Linear Bayesian Neural Network},
+  author={Lin, Yanying and Ye, Kejiang and Xu, Chengzhong},
+  booktitle={Proceedings of the 26th IEEE International Conference on Parallel and Distributed Systems},
+  year={2020},
+  show_in_publications={false},
 }
 
-@article{einstein1905photoelectriceffect,
-  bibtex_show = {true},
-  abbr        = {Ann. Phys.},
-  title       = {{{\"U}ber einen die Erzeugung und Verwandlung des Lichtes betreffenden heuristischen Gesichtspunkt}},
-  author      = {Albert Einstein},
-  abstract    = {This is the abstract text.},
-  journal     = {Ann. Phys.},
-  volume      = {322},
-  number      = {6},
-  pages       = {132--148},
-  year        = {1905},
-  doi         = {10.1002/andp.19053220607},
-  award       = {Albert Einstein receveid the **Nobel Prize in Physics** 1921 *for his services to Theoretical Physics, and especially for his discovery of the law of the photoelectric effect*},
-  award_name  = {Nobel Prize}
+@inproceedings{wu2025rock,
+  abbr={Cluster},
+  title={ROCK: Serving Multimodal Models in Cloud with Heterogeneous-Aware Resource Orchestration for Thousands of LoRA Adapters},
+  author={Wu, Shuaipeng and Lin, Yanying and Peng, Shijie and Chen, Wenyan and Ma, Chong and Shen, Min and Chen, Le and Xu, Chengzhong and Ye, Kejiang},
+  booktitle={Proceedings of the 2025 IEEE International Conference on Cluster Computing},
+  year={2025},
+  selected={true},
+  bibtex_show={true},
+  pdf={Cluster25.pdf},
+  abstract={
+  This work analyzes the performance of different request workloads in production-level environments and proposes a heterogeneous graph matching algorithm to adapt to different levels of resource characteristics and inference performance of various workloads. ROCK is a system-level resource orchestration framework designed to optimize the deployment of thousands of LoRA adapters in a cloud environment through intelligent resource allocation and workload-aware scheduling.
+  },
+  show_in_publications={true},
 }
 
-@book{przibram1967letters,
-  bibtex_show = {true},
-  title       = {Letters on wave mechanics},
-  author      = {Einstein, Albert and Schrödinger, Erwin and Planck, Max and Lorentz, Hendrik Antoon and Przibram, Karl},
-  year        = {1967},
-  publisher   = {Vision},
-  preview     = {wave-mechanics.gif},
-  abbr        = {Vision}
+@inproceedings{li2023flash,
+  abbr={ICPADS},
+  title={FLASH: Low-Latency Serverless Model Inference with Multi-Core Parallelism in Edge},
+  author={Li, Yanbo and Lin, Yanying* and Peng, Shijie and Tang, Yingfei and Xiang, Tian and Song, Wei and Ye, Kejiang},
+  booktitle={Proceedings of the 29th IEEE International Conference on Parallel and Distributed Systems},
+  year={2023},
+  selected={false},
+  show_in_publications={true},
+}
+
+@inproceedings{peng2024eins,
+  abbr={CSCWD},
+  title={EINS: Edge-Cloud Deep Model Inference with Network-Efficiency Schedule in Serverless},
+  author={Peng, Shijie and Lin, Yanying and Chen, Wenyan and Tang, Yingfei and Duan, Xu and Ye, Kejiang},
+  booktitle={Proceedings of the 27th International Conference on Computer Supported Cooperative Work in Design},
+  year={2024},
+  selected={false},
+  bibtex_show={true},
+  show_in_publications={true},
+}
+
+@inproceedings{deng2022system,
+  abbr={ISPA},
+  title={System-level Implications of Serverless: Workload Characterizing and Performance Understanding},
+  author={Deng, Deshi and Lin, Yanying* and Ye, Kejiang},
+  booktitle={Proceedings of the 20th IEEE International Symposium on Parallel and Distributed Processing with Applications},
+  year={2022},
+  show_in_publications={false},
+}
+
+@inproceedings{lin2021pean,
+  abbr={HPCC},
+  title={PEAN: A Packet-Level End-To-End Attentive Network for Encrypted Traffic Identification},
+  author={Lin, Peng and Hu, Yishen and Lin, Yanying and Ye, Kejiang and Xu, Chengzhong},
+  booktitle={Proceedings of the 23rd IEEE International Conference on High Performance Computing and Communications},
+  year={2021},
+  show_in_publications={false},
+}
+
+@article{lin2025serving,
+  abbr={IEEE TSC},
+  title={Serving LLM in Distributed GPU Cluster With Fine-Grain Pipeline Constraints},
+  author={Lin, Yanying and Peng, Shijie and Wu, Shuaipeng and Li, Yanbo and Lu, Chengzhi and Ye, Kejiang and Xu, Chengzhong},
+  journal={IEEE Transactions on Services Computing},
+  year={2025},
+  volume={18},
+  number={5},
+  selected={true},
+  bibtex_show={true},
+  abstract={
+  LLMs are increasingly deployed in distributed GPU clusters using pipeline parallelism for efficient inference. However, existing approaches treat the entire pipeline as a monolithic unit, resulting in coarse-grained resource management and suboptimal SLO compliance. Each pipeline stage has distinct workload characteristics, but current systems cannot leverage this for better performance control. We propose fine-grained pipeline constraints that manage each stage independently, enabling precise SLO allocation at the stage level. 
+  },
+  show_in_publications={true},
+}
+
+@article{chen2024understanding,
+  abbr={IEEE TCC},
+  title={Understanding Serverless Inference in Mobile-Edge Networks: A Benchmark Approach},
+  author={Chen, Junhong and Lin, Yanying* and Peng, Shijie and Wu, Shuaipeng and Kent, Kenneth and Dai, Hao and Ye, Kejiang and Wang, Yang},
+  journal={IEEE Transactions on Cloud Computing},
+  year={2025},
+  volume={13},
+  number={1},
+  selected={false},
+  show_in_publications={true},
+}
+
+@article{li2022serverless,
+  abbr={IEEE TSC},
+  title={Serverless Computing: State-of-the-Art, Challenges and Opportunities},
+  author={Li, Yongkang and Lin, Yanying and Ye, Kejiang and Xu, Chengzhong and Wang, Yang},
+  journal={IEEE Transactions on Services Computing},
+  year={2022},
+  abstract={
+  This work presents a comprehensive survey of serverless computing, providing insights into the current state-of-the-art and identifying key research challenges and future opportunities. We systematically analyze the serverless paradigm from multiple perspectives including architecture, performance, security, and application domains. The survey contributes to the community by outlining promising research directions.
+  },
+  show_in_publications={false},
+}
+
+@article{lin2021novel,
+  abbr={IEEE/ACM ToN},
+  title={A Novel End-to-end Deep Learning Framework for Encrypted Traffic Identification},
+  author={Lin, Peng and Ye, Kejiang and Hu, Yishen and Lin, Yanying and Xu, Chengzhong},
+  journal={IEEE/ACM Transactions on Networking},
+  year={2021},
+  show_in_publications={false},
 }

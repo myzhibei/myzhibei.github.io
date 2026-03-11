@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Head -->
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <!-- Metadata, OpenGraph and Schema.org -->
+
+  <!-- Website verification -->
+  
+    <meta name="google-site-verification" content="N6hUw9yhBc1nlEIz8K4CClCoNO7X6V2njabf8_d2eAo">
+  
+  
+  <!--
+    Avoid warning on Google Chrome Error with Permissions-Policy header:
+    Origin trial controlled feature not enabled: 'interest-cohort'.
+    see https://stackoverflow.com/a/75119417
+  -->
+  <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
+
+
+
+
+<!-- Standard metadata -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>
+  
+  
+    
+      Why Pipeline Parallelism Matters for Serverless LLM Inference | Shijie Peng(彭士杰)
+    
+  
+</title>
+<meta name="author" content="Shijie Peng">
+<meta name="description" content="Exploring why pipeline parallelism is critical for LLM inference in serverless environments, where resource constraints and sparse workloads make tensor parallelism impractical, and how pipeline parallelism naturally addresses queuing delays.">
+
+  <meta name="keywords" content="Shijie Peng, UCAS, SIAT, Chinese Academy of Sciences, machine learning systems, cloud computing, cloud-edge collaboration, inference systems">
+
+
+
+
+
+
+  <!-- OpenGraph -->
+  <meta property="og:site_name" content="Shijie Peng(彭士杰)">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Shijie Peng(彭士杰) | Why Pipeline Parallelism Matters for Serverless LLM Inference">
+  <meta property="og:url" content="https://myzhibei.github.io/blog/2025/Serverless-LLM/">
+  <meta property="og:description" content="Exploring why pipeline parallelism is critical for LLM inference in serverless environments, where resource constraints and sparse workloads make tensor parallelism impractical, and how pipeline parallelism naturally addresses queuing delays.">
+  
+  <meta property="og:locale" content="en">
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Why Pipeline Parallelism Matters for Serverless LLM Inference">
+  <meta name="twitter:description" content="Exploring why pipeline parallelism is critical for LLM inference in serverless environments, where resource constraints and sparse workloads make tensor parallelism impractical, and how pipeline parallelism naturally addresses queuing delays.">
+  
+  
+
+
+
+  <!-- Schema.org -->
+  
+  
+  
+
+  <script type="application/ld+json">
+    {
+        "author":
+        {
+            "@type": "Person",
+            "name": "Shijie Peng"
+        },
+        "url": "https://myzhibei.github.io/blog/2025/Serverless-LLM/",
+        "@type": "BlogPosting",
+        "description": "Exploring why pipeline parallelism is critical for LLM inference in serverless environments, where resource constraints and sparse workloads make tensor parallelism impractical, and how pipeline parallelism naturally addresses queuing delays.",
+        "headline": "Why Pipeline Parallelism Matters for Serverless LLM Inference",
+        
+        "sameAs": ["https://github.com/myzhibei","https://scholar.google.com/citations?user=jRdDabUAAAAJ"],
+        
+        "name": "Shijie Peng",
+        "@context": "https://schema.org"
+    }
+  </script>
+
+
+
+<!-- Bootstrap & MDB -->
+<link rel="stylesheet" href="/assets/css/bootstrap.min.css?a4b3f509e79c54a512b890d73235ef04">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous">
+
+
+
+<!-- Fonts & Icons -->
+<link defer rel="stylesheet" href="/assets/css/academicons.min.css?f0b7046b84e425c55f3463ac249818f5">
+<link defer rel="stylesheet" href="/assets/css/scholar-icons.css?62b2ac103a88034e6882a5be5f3e2772">
+<link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Shadows+Into+Light|Material+Icons&amp;display=swap">
+
+<!-- Code Syntax Highlighting -->
+<link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light">
+
+
+
+<!-- Styles -->
+
+
+
+
+  <link rel="shortcut icon" href="/assets/img/site-icon.svg?157697c96fe5a56cccc13ff3c52574f7">
+
+<link rel="stylesheet" href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e">
+<link rel="canonical" href="https://myzhibei.github.io/blog/2025/Serverless-LLM/">
+
+
+  <!-- Dark Mode -->
+  <script src="/assets/js/theme.js?a81d82887dd692e91686b43de4542f18"></script>
+  <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark">
+  <script>
+    initTheme();
+  </script>
+
+
+
+
+
+
+
+
+
+
+  </head>
+
+  <!-- Body -->
+  <body class="fixed-top-nav sticky-bottom-footer">
+    <!-- Header -->
+    <header>
+  <!-- Nav Bar -->
+  <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation">
+    <div class="container">
+      
+        <a class="navbar-brand title font-weight-lighter" href="/">
+          Shijie Peng(彭士杰)
+        </a>
+      
+      <!-- Navbar Toggle -->
+      <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar top-bar"></span>
+        <span class="icon-bar middle-bar"></span>
+        <span class="icon-bar bottom-bar"></span>
+      </button>
+
+      <div class="collapse navbar-collapse text-right" id="navbarNav">
+        <ul class="navbar-nav ml-auto flex-nowrap">
+          
+
+          <!-- About -->
+          <li class="nav-item ">
+            <a class="nav-link" href="/">about
+              
+            </a>
+          </li>
+
+          <!-- Other pages -->
+          
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+          
+            
+              
+                
+                <li class="nav-item ">
+                  <a class="nav-link" href="/publications/">Publications
+                    
+                  </a>
+                </li>
+              
+            
+          
+            
+          
+          
+            <!-- Search -->
+            <li class="nav-item">
+              <button id="search-toggle" title="Search" onclick="openSearchModal()">
+                <span class="nav-link">ctrl k <i class="ti ti-search"></i></span>
+              </button>
+            </li>
+          
+          
+            <!-- Toogle theme mode -->
+            <li class="toggle-container">
+              <button id="light-toggle" title="Change theme">
+                <i class="ti ti-sun-moon" id="light-toggle-system"></i>
+                <i class="ti ti-moon-filled" id="light-toggle-dark"></i>
+                <i class="ti ti-sun-filled" id="light-toggle-light"></i>
+              </button>
+            </li>
+          
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+    <!-- Scrolling Progress Bar -->
+    <progress id="progress" value="0">
+      <div class="progress-container">
+        <span class="progress-bar"></span>
+      </div>
+    </progress>
+  
+</header>
+
+
+    <!-- Content -->
+    <div class="container mt-5" role="main">
+      
+        
+
+
+
+
+
+
+<div class="post">
+  <header class="post-header">
+    <h1 class="post-title">Why Pipeline Parallelism Matters for Serverless LLM Inference</h1>
+    <p class="post-meta">
+      Created on November 30, 2025
+      by Yanying Lin
+      
+      
+      
+        <span id="busuanzi_container_page_pv" style="margin-left: 8px;">
+          • <i class="fa-solid fa-eye fa-sm"></i> <span id="busuanzi_value_page_pv"></span> views
+        </span>
+      
+    </p>
+    <p class="post-tags">
+      
+        <a href="/blog/2025"> <i class="fa-solid fa-calendar fa-sm"></i> 2025 </a>
+      
+      
+          ·  
+        
+          
+            <a href="/blog/tag/serverless"> <i class="fa-solid fa-hashtag fa-sm"></i> Serverless</a>
+          
+          
+             
+          
+        
+          
+            <a href="/blog/tag/pipeline-parallelism"> <i class="fa-solid fa-hashtag fa-sm"></i> Pipeline Parallelism</a>
+          
+          
+             
+          
+        
+          
+            <a href="/blog/tag/ai-infrastructure"> <i class="fa-solid fa-hashtag fa-sm"></i> AI Infrastructure</a>
+          
+          
+        
+      
+
+      
+          ·  
+        
+          
+            <a href="/blog/category/research"> <i class="fa-solid fa-tag fa-sm"></i> Research</a>
+          
+          
+             
+          
+        
+          
+            <a href="/blog/category/systems"> <i class="fa-solid fa-tag fa-sm"></i> Systems</a>
+          
+          
+        
+      
+    </p>
+  </header>
+
+  <article class="post-content">
+    
+    <div id="markdown-content">
+      <p>In the landscape of large language model inference, tensor parallelism has long been the preferred approach for reducing latency. By splitting model layers across multiple GPUs connected via high-bandwidth NVLink, tensor parallelism enables efficient parallel computation with minimal communication overhead. However, as inference workloads increasingly move to serverless and dynamic scaling environments, the fundamental assumptions that made tensor parallelism dominant are being challenged.</p>
+
+<p>The shift toward serverless inference is driven by economic realities. Online inference workloads are often sparse, with requests arriving unpredictably. Maintaining dedicated clusters with continuous GPU allocation becomes wasteful when utilization is low. Cloud providers have responded by implementing resource recycling strategies—using serverless architectures or dynamic scaling to reduce resource allocation, or by time-sharing GPU resources across multiple models. This resource sharing model creates a new constraint: when you need to scale up for bursty workloads, you may find yourself unable to locate contiguous GPUs connected via NVLink that are required for tensor parallelism.</p>
+
+<p>This is where pipeline parallelism emerges as not just a fallback option, but as a strategic choice that aligns naturally with serverless architectures. While pipeline parallelism introduces communication overhead between stages, our analysis reveals that queuing time, not communication time, dominates end-to-end latency in these environments. Pipeline parallelism’s inherent ability to reduce queuing delays makes it particularly well-suited for serverless LLM inference.</p>
+
+<h2 id="the-dominance-of-tensor-parallelism">The Dominance of Tensor Parallelism</h2>
+
+<p>Tensor parallelism has become the de facto standard for distributed LLM inference because it directly addresses the primary concern: latency. In tensor parallelism, each layer of the model is split across multiple GPUs, with each GPU computing a portion of the layer’s computation. The results are then aggregated using high-bandwidth interconnects like NVLink, which can achieve hundreds of gigabytes per second of bandwidth.</p>
+
+<p>The key advantage of tensor parallelism is that it reduces the computation time per layer. Instead of one GPU processing an entire layer sequentially, multiple GPUs work in parallel, each handling a fraction of the computation. This parallelization directly translates to lower latency for individual requests, which is crucial for interactive applications where users expect fast responses.</p>
+
+<p>However, tensor parallelism has strict requirements. It needs GPUs that are physically close and connected via high-bandwidth links. NVLink connections are typically limited to GPUs within the same server or closely connected servers. This requirement for contiguous, high-bandwidth-connected GPUs becomes problematic in shared, dynamic environments.</p>
+
+<h2 id="the-serverless-reality-resource-constraints-and-sparse-workloads">The Serverless Reality: Resource Constraints and Sparse Workloads</h2>
+
+<p>The economics of cloud infrastructure have driven a fundamental shift in how inference resources are allocated. Traditional dedicated clusters make sense when workloads are predictable and sustained. However, many production inference scenarios exhibit sparse, unpredictable request patterns. A model might receive bursts of requests followed by long periods of inactivity. Maintaining dedicated GPU clusters for such workloads leads to significant resource waste.</p>
+
+<p>Cloud providers have responded with two complementary strategies. First, they implement serverless architectures with dynamic scaling that can quickly provision and deprovision resources based on demand. Second, they enable time-sharing of GPU resources across multiple models and workloads. Different models may have complementary request patterns—one model receives requests while another is idle, allowing efficient resource utilization through time-sharing.</p>
+
+<p>This resource sharing model creates a new constraint landscape. When a workload needs to scale up to handle a burst of requests, the system must locate available GPUs. In a shared environment with multiple tenants and models, finding a set of contiguous GPUs connected via NVLink becomes increasingly difficult. The GPUs that are available may be scattered across different servers, connected only via standard network links rather than high-bandwidth interconnects.</p>
+
+<h2 id="why-pipeline-parallelism-becomes-necessary">Why Pipeline Parallelism Becomes Necessary</h2>
+
+<p>When tensor parallelism is infeasible due to resource constraints, pipeline parallelism emerges as a practical alternative. In pipeline parallelism, the model is divided into stages, with each stage running on a different GPU or set of GPUs. Requests flow through the pipeline, with each stage processing its portion of the model and passing intermediate results (hidden states) to the next stage.</p>
+
+<p>The key difference from tensor parallelism is that pipeline parallelism doesn’t require GPUs to be connected via high-bandwidth links. Stages can communicate over standard network connections, making it much more flexible in terms of resource allocation. This flexibility is crucial in serverless environments where resources are dynamically allocated and may be geographically distributed.</p>
+
+<p>However, pipeline parallelism introduces communication overhead. Each stage must transmit hidden states to the next stage, and this communication happens over the network rather than high-bandwidth interconnects. The question becomes: does this communication overhead negate the benefits of pipeline parallelism?</p>
+
+<h2 id="understanding-end-to-end-latency">Understanding End-to-End Latency</h2>
+
+<p>To answer this question, we need to decompose end-to-end response time into its components. End-to-end response time consists of three main parts: GPU computation time, communication time, and queuing time.</p>
+
+<p>GPU computation time is relatively stable. For a given model and input, the computation required is deterministic. Unless there is significant interference from other workloads sharing the same GPU, computation time remains consistent.</p>
+
+<p>Communication time is also relatively stable and depends on the amount of data transmitted between stages. In pipeline parallelism, stages transmit hidden states between them. These hidden states are typically in the range of 2MB per transmission, which is manageable even over standard network connections. With modern data center networks providing 25-100 Gbps bandwidth, transmitting 2MB takes on the order of milliseconds.</p>
+
+<p>The component that varies most significantly is queuing time. When requests arrive at a rate higher than the system can process, they queue up waiting for available resources. In a serverless environment with dynamic workloads and resource sharing, queuing can become the dominant factor in end-to-end latency.</p>
+
+<h2 id="queuing-time-as-the-dominant-factor">Queuing Time as the Dominant Factor</h2>
+
+<p>Our analysis reveals that queuing time, not communication time, dominates end-to-end response latency in serverless inference environments. This finding has profound implications for how we should design distributed inference systems.</p>
+
+<p>The reason queuing time dominates is that serverless environments are inherently multi-tenant. Multiple models and workloads compete for shared GPU resources. When a burst of requests arrives, if all requests must wait for the same GPU resources to become available, queuing delays accumulate. Even if individual requests have low computation and communication times, the time spent waiting in queues can dwarf these components.</p>
+
+<p>Pipeline parallelism naturally addresses this queuing problem. In a pipeline setup, different stages can process different requests concurrently. While one request is being processed at stage 2, another request can be processed at stage 1, and yet another at stage 3. This concurrent processing means that requests don’t all queue at the same bottleneck. Instead, the pipeline can maintain throughput even when individual stages experience variability in processing time.</p>
+
+<p>The pipeline’s ability to smooth out queuing delays is particularly valuable in serverless environments where resource availability fluctuates. If one stage experiences a temporary slowdown due to resource contention, other stages can continue processing, maintaining overall system throughput.</p>
+
+<h2 id="pipeline-parallelism-and-serverless-a-natural-fit">Pipeline Parallelism and Serverless: A Natural Fit</h2>
+
+<p>The combination of pipeline parallelism and serverless architectures creates a synergistic effect. Serverless provides the flexibility to dynamically allocate resources for each pipeline stage, while pipeline parallelism provides the structure to efficiently utilize those resources even when they’re not optimally connected.</p>
+
+<p>In a serverless pipeline setup, each stage can be allocated resources independently. If stage 1 needs more capacity, the system can scale up resources for that stage without affecting other stages. This fine-grained scaling is more efficient than scaling entire tensor-parallel groups, which require finding contiguous high-bandwidth-connected GPUs.</p>
+
+<p>The communication overhead of pipeline parallelism, while real, is often acceptable given the benefits. Hidden state transmissions of 2MB over modern networks add only milliseconds of latency, which is small compared to the queuing delays that pipeline parallelism helps avoid. The key insight is that optimizing for queuing time reduction, rather than minimizing communication overhead, leads to better overall system performance in serverless environments.</p>
+
+<h2 id="the-future-pipeline-parallelism-as-the-new-normal">The Future: Pipeline Parallelism as the New Normal</h2>
+
+<p>We believe that pipeline parallelism will become the new normal for LLM inference, particularly for sparse, unpredictable workloads in shared environments. This is not to say that tensor parallelism should be abandoned—when resources allow, tensor parallelism remains the optimal choice for latency-sensitive applications. However, the reality of modern cloud infrastructure is that such optimal conditions are increasingly rare.</p>
+
+<p>Pipeline parallelism can also be combined with tensor parallelism and expert parallelism in hybrid approaches. For example, within each pipeline stage, tensor parallelism can be used if the stage has access to multiple well-connected GPUs. Expert parallelism can be used for models with MoE (Mixture of Experts) architectures. The key is to choose the parallelism strategy that matches the available resources and workload characteristics.</p>
+
+<p>In shared, serverless environments, pipeline parallelism should be given greater consideration. Its flexibility in resource allocation, natural handling of queuing delays, and compatibility with dynamic scaling make it well-suited for the evolving landscape of cloud-based LLM inference.</p>
+
+<hr>
+
+<p>The shift toward serverless and shared-resource environments for LLM inference is driven by economic realities and workload characteristics. In these environments, the strict requirements of tensor parallelism—contiguous GPUs connected via high-bandwidth links—often cannot be met. Pipeline parallelism emerges as a practical and effective alternative.</p>
+
+<p>The key insight is that end-to-end latency is dominated by queuing time, not communication overhead. Pipeline parallelism’s ability to reduce queuing delays through concurrent stage processing makes it particularly valuable in serverless environments where resource contention is common. While communication overhead exists, it is manageable and often acceptable given the queuing benefits.</p>
+
+<p>As inference workloads continue to move toward serverless architectures, pipeline parallelism will become increasingly important. Understanding how to effectively deploy and optimize pipeline parallelism in these environments will be crucial for building efficient, scalable LLM inference systems that can handle the sparse, unpredictable workloads that characterize modern AI applications.</p>
+
+    </div>
+  </article>
+
+  
+
+  
+
+  
+    
+      
+
+  
+    
+    
+      <br>
+      <hr>
+      <br>
+      <ul class="list-disc pl-8"></ul>
+
+      <!-- Adds related posts to the end of an article -->
+      <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2>
+    
+
+    <p class="mb-2">Here are some more articles you might like to read next:</p>
+  
+
+  <li class="my-2">
+    
+      <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2025/FPGA-LLM/">FPGA in the AI Era: From Standalone Struggles to Co-Design Opportunities (Part 1)</a>
+    
+  </li>
+
+  
+
+  <li class="my-2">
+    
+      <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2025/Diffusion-Model/">Diffusion Model Serving: Why It Matters for Systems</a>
+    
+  </li>
+
+  
+
+  <li class="my-2">
+    
+      <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(LLD)/">HZAU国际影城(HZAU-Cineplex)——软件详细设计说明书(LLD)</a>
+    
+  </li>
+
+  
+
+  <li class="my-2">
+    
+      <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E8%AE%A1%E5%88%92(Testing-Plan)/">HZAU国际影城(HZAU-Cineplex)——软件测试计划(Testing-Plan)</a>
+    
+  </li>
+
+  
+
+  <li class="my-2">
+    
+      <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E6%A6%82%E8%A6%81%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(HLD)/">HZAU国际影城(HZAU-Cineplex)——软件概要设计说明书(HLD)</a>
+    
+  </li>
+
+
+
+    
+  
+
+  
+  
+</div>
+
+      
+    </div>
+
+    <!-- Footer -->
+    
+
+
+  <footer class="sticky-bottom mt-5" role="contentinfo">
+    
+
+    <div class="container">
+      
+  © Copyright 2026
+  Shijie
+  
+  Peng. 
+  
+  
+    
+  
+    
+  
+    
+      
+      
+  
+    <span style="margin-left: 12px;">
+      <a href="/feed.xml" title="RSS Feed" style="color: inherit; text-decoration: none;">
+        <i class="fa-solid fa-square-rss"></i>
+      </a>
+    </span>
+  
+  
+  
+  
+    <span id="busuanzi_container_site_pv" style="margin-left: 12px;">
+      <i class="fa-solid fa-eye"></i> Total Visits: <span id="busuanzi_value_site_pv"></span>
+    </span>
+  
+
+    </div>
+  </footer>
+
+
+
+    <!-- JavaScripts -->
+    <!-- jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+<!-- Bootsrap & MDB scripts -->
+<script src="/assets/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script>
+
+
+  <!-- Masonry & imagesLoaded -->
+  <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script>
+  <script defer src="/assets/js/masonry.js?a0db7e5d5c70cc3252b3138b0c91dcaf" type="text/javascript"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- Medium Zoom JS -->
+  <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script>
+  <script defer src="/assets/js/zoom.js?85ddb88934d28b74e78031fd54cf8308"></script>
+
+
+
+
+
+
+<!-- Load Common JS -->
+<script src="/assets/js/no_defer.js?2781658a0a2b13ed609542042a859126"></script>
+<script defer src="/assets/js/common.js?e0514a05c5c95ac1a93a8dfd5249b92e"></script>
+<script defer src="/assets/js/copy_code.js?c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script>
+
+<!-- Jupyter Open External Links New Tab -->
+<script defer src="/assets/js/jupyter_new_tab.js?d9f17b6adc2311cbabd747f4538bb15f"></script>
+
+<!-- Badges -->
+
+  <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script>
+
+
+  <script async src="https://badge.dimensions.ai/badge.js"></script>
+
+
+
+  <!-- MathJax -->
+  <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script>
+  
+    <script src="/assets/js/mathjax-setup.js?a5bb4e6a542c546dd929b24b8b236dfd"></script>
+    <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script>
+  
+
+
+
+
+
+
+
+
+
+  <!-- Scrolling Progress Bar -->
+  <script defer src="/assets/js/progress-bar.js?2f30e0e6801ea8f5036fa66e1ab0a71a" type="text/javascript"></script>
+
+
+
+
+
+
+
+  <!-- Back to Top -->
+  <script src="/assets/js/vanilla-back-to-top.min.js?f40d453793ff4f64e238e420181a1d17"></script>
+  <script>
+    addBackToTop();
+  </script>
+
+
+
+  <!-- Search -->
+  <script type="module" src="/assets/js/search/ninja-keys.min.js?a3446f084dcaecc5f75aa1757d087dcf"></script>
+  <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys>
+  <script src="/assets/js/search-setup.js?6c304f7b1992d4b60f7a07956e52f04a"></script>
+  <script src="/assets/js/search-data.js"></script>
+  <script src="/assets/js/shortcut-key.js?6f508d74becd347268a7f822bca7309d"></script>
+
+
+
+
+<!-- Busuanzi (visitor counter) -->
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://myzhibei.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://myzhibei.github.io/" rel="alternate" type="text/html" hreflang="en" /><updated>2026-03-11T17:09:19+08:00</updated><id>https://myzhibei.github.io/feed.xml</id><title type="html">Shijie Peng(彭士杰)</title><subtitle>PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration.
+</subtitle><entry><title type="html">Why Pipeline Parallelism Matters for Serverless LLM Inference</title><link href="https://myzhibei.github.io/blog/2025/Serverless-LLM/" rel="alternate" type="text/html" title="Why Pipeline Parallelism Matters for Serverless LLM Inference" /><published>2025-11-30T00:00:00+08:00</published><updated>2025-11-30T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2025/Serverless-LLM</id><content type="html" xml:base="https://myzhibei.github.io/blog/2025/Serverless-LLM/"><![CDATA[<p>In the landscape of large language model inference, tensor parallelism has long been the preferred approach for reducing latency. By splitting model layers across multiple GPUs connected via high-bandwidth NVLink, tensor parallelism enables efficient parallel computation with minimal communication overhead. However, as inference workloads increasingly move to serverless and dynamic scaling environments, the fundamental assumptions that made tensor parallelism dominant are being challenged.</p>
+
+<p>The shift toward serverless inference is driven by economic realities. Online inference workloads are often sparse, with requests arriving unpredictably. Maintaining dedicated clusters with continuous GPU allocation becomes wasteful when utilization is low. Cloud providers have responded by implementing resource recycling strategies—using serverless architectures or dynamic scaling to reduce resource allocation, or by time-sharing GPU resources across multiple models. This resource sharing model creates a new constraint: when you need to scale up for bursty workloads, you may find yourself unable to locate contiguous GPUs connected via NVLink that are required for tensor parallelism.</p>
+
+<p>This is where pipeline parallelism emerges as not just a fallback option, but as a strategic choice that aligns naturally with serverless architectures. While pipeline parallelism introduces communication overhead between stages, our analysis reveals that queuing time, not communication time, dominates end-to-end latency in these environments. Pipeline parallelism’s inherent ability to reduce queuing delays makes it particularly well-suited for serverless LLM inference.</p>
+
+<h2 id="the-dominance-of-tensor-parallelism">The Dominance of Tensor Parallelism</h2>
+
+<p>Tensor parallelism has become the de facto standard for distributed LLM inference because it directly addresses the primary concern: latency. In tensor parallelism, each layer of the model is split across multiple GPUs, with each GPU computing a portion of the layer’s computation. The results are then aggregated using high-bandwidth interconnects like NVLink, which can achieve hundreds of gigabytes per second of bandwidth.</p>
+
+<p>The key advantage of tensor parallelism is that it reduces the computation time per layer. Instead of one GPU processing an entire layer sequentially, multiple GPUs work in parallel, each handling a fraction of the computation. This parallelization directly translates to lower latency for individual requests, which is crucial for interactive applications where users expect fast responses.</p>
+
+<p>However, tensor parallelism has strict requirements. It needs GPUs that are physically close and connected via high-bandwidth links. NVLink connections are typically limited to GPUs within the same server or closely connected servers. This requirement for contiguous, high-bandwidth-connected GPUs becomes problematic in shared, dynamic environments.</p>
+
+<h2 id="the-serverless-reality-resource-constraints-and-sparse-workloads">The Serverless Reality: Resource Constraints and Sparse Workloads</h2>
+
+<p>The economics of cloud infrastructure have driven a fundamental shift in how inference resources are allocated. Traditional dedicated clusters make sense when workloads are predictable and sustained. However, many production inference scenarios exhibit sparse, unpredictable request patterns. A model might receive bursts of requests followed by long periods of inactivity. Maintaining dedicated GPU clusters for such workloads leads to significant resource waste.</p>
+
+<p>Cloud providers have responded with two complementary strategies. First, they implement serverless architectures with dynamic scaling that can quickly provision and deprovision resources based on demand. Second, they enable time-sharing of GPU resources across multiple models and workloads. Different models may have complementary request patterns—one model receives requests while another is idle, allowing efficient resource utilization through time-sharing.</p>
+
+<p>This resource sharing model creates a new constraint landscape. When a workload needs to scale up to handle a burst of requests, the system must locate available GPUs. In a shared environment with multiple tenants and models, finding a set of contiguous GPUs connected via NVLink becomes increasingly difficult. The GPUs that are available may be scattered across different servers, connected only via standard network links rather than high-bandwidth interconnects.</p>
+
+<h2 id="why-pipeline-parallelism-becomes-necessary">Why Pipeline Parallelism Becomes Necessary</h2>
+
+<p>When tensor parallelism is infeasible due to resource constraints, pipeline parallelism emerges as a practical alternative. In pipeline parallelism, the model is divided into stages, with each stage running on a different GPU or set of GPUs. Requests flow through the pipeline, with each stage processing its portion of the model and passing intermediate results (hidden states) to the next stage.</p>
+
+<p>The key difference from tensor parallelism is that pipeline parallelism doesn’t require GPUs to be connected via high-bandwidth links. Stages can communicate over standard network connections, making it much more flexible in terms of resource allocation. This flexibility is crucial in serverless environments where resources are dynamically allocated and may be geographically distributed.</p>
+
+<p>However, pipeline parallelism introduces communication overhead. Each stage must transmit hidden states to the next stage, and this communication happens over the network rather than high-bandwidth interconnects. The question becomes: does this communication overhead negate the benefits of pipeline parallelism?</p>
+
+<h2 id="understanding-end-to-end-latency">Understanding End-to-End Latency</h2>
+
+<p>To answer this question, we need to decompose end-to-end response time into its components. End-to-end response time consists of three main parts: GPU computation time, communication time, and queuing time.</p>
+
+<p>GPU computation time is relatively stable. For a given model and input, the computation required is deterministic. Unless there is significant interference from other workloads sharing the same GPU, computation time remains consistent.</p>
+
+<p>Communication time is also relatively stable and depends on the amount of data transmitted between stages. In pipeline parallelism, stages transmit hidden states between them. These hidden states are typically in the range of 2MB per transmission, which is manageable even over standard network connections. With modern data center networks providing 25-100 Gbps bandwidth, transmitting 2MB takes on the order of milliseconds.</p>
+
+<p>The component that varies most significantly is queuing time. When requests arrive at a rate higher than the system can process, they queue up waiting for available resources. In a serverless environment with dynamic workloads and resource sharing, queuing can become the dominant factor in end-to-end latency.</p>
+
+<h2 id="queuing-time-as-the-dominant-factor">Queuing Time as the Dominant Factor</h2>
+
+<p>Our analysis reveals that queuing time, not communication time, dominates end-to-end response latency in serverless inference environments. This finding has profound implications for how we should design distributed inference systems.</p>
+
+<p>The reason queuing time dominates is that serverless environments are inherently multi-tenant. Multiple models and workloads compete for shared GPU resources. When a burst of requests arrives, if all requests must wait for the same GPU resources to become available, queuing delays accumulate. Even if individual requests have low computation and communication times, the time spent waiting in queues can dwarf these components.</p>
+
+<p>Pipeline parallelism naturally addresses this queuing problem. In a pipeline setup, different stages can process different requests concurrently. While one request is being processed at stage 2, another request can be processed at stage 1, and yet another at stage 3. This concurrent processing means that requests don’t all queue at the same bottleneck. Instead, the pipeline can maintain throughput even when individual stages experience variability in processing time.</p>
+
+<p>The pipeline’s ability to smooth out queuing delays is particularly valuable in serverless environments where resource availability fluctuates. If one stage experiences a temporary slowdown due to resource contention, other stages can continue processing, maintaining overall system throughput.</p>
+
+<h2 id="pipeline-parallelism-and-serverless-a-natural-fit">Pipeline Parallelism and Serverless: A Natural Fit</h2>
+
+<p>The combination of pipeline parallelism and serverless architectures creates a synergistic effect. Serverless provides the flexibility to dynamically allocate resources for each pipeline stage, while pipeline parallelism provides the structure to efficiently utilize those resources even when they’re not optimally connected.</p>
+
+<p>In a serverless pipeline setup, each stage can be allocated resources independently. If stage 1 needs more capacity, the system can scale up resources for that stage without affecting other stages. This fine-grained scaling is more efficient than scaling entire tensor-parallel groups, which require finding contiguous high-bandwidth-connected GPUs.</p>
+
+<p>The communication overhead of pipeline parallelism, while real, is often acceptable given the benefits. Hidden state transmissions of 2MB over modern networks add only milliseconds of latency, which is small compared to the queuing delays that pipeline parallelism helps avoid. The key insight is that optimizing for queuing time reduction, rather than minimizing communication overhead, leads to better overall system performance in serverless environments.</p>
+
+<h2 id="the-future-pipeline-parallelism-as-the-new-normal">The Future: Pipeline Parallelism as the New Normal</h2>
+
+<p>We believe that pipeline parallelism will become the new normal for LLM inference, particularly for sparse, unpredictable workloads in shared environments. This is not to say that tensor parallelism should be abandoned—when resources allow, tensor parallelism remains the optimal choice for latency-sensitive applications. However, the reality of modern cloud infrastructure is that such optimal conditions are increasingly rare.</p>
+
+<p>Pipeline parallelism can also be combined with tensor parallelism and expert parallelism in hybrid approaches. For example, within each pipeline stage, tensor parallelism can be used if the stage has access to multiple well-connected GPUs. Expert parallelism can be used for models with MoE (Mixture of Experts) architectures. The key is to choose the parallelism strategy that matches the available resources and workload characteristics.</p>
+
+<p>In shared, serverless environments, pipeline parallelism should be given greater consideration. Its flexibility in resource allocation, natural handling of queuing delays, and compatibility with dynamic scaling make it well-suited for the evolving landscape of cloud-based LLM inference.</p>
+
+<hr />
+
+<p>The shift toward serverless and shared-resource environments for LLM inference is driven by economic realities and workload characteristics. In these environments, the strict requirements of tensor parallelism—contiguous GPUs connected via high-bandwidth links—often cannot be met. Pipeline parallelism emerges as a practical and effective alternative.</p>
+
+<p>The key insight is that end-to-end latency is dominated by queuing time, not communication overhead. Pipeline parallelism’s ability to reduce queuing delays through concurrent stage processing makes it particularly valuable in serverless environments where resource contention is common. While communication overhead exists, it is manageable and often acceptable given the queuing benefits.</p>
+
+<p>As inference workloads continue to move toward serverless architectures, pipeline parallelism will become increasingly important. Understanding how to effectively deploy and optimize pipeline parallelism in these environments will be crucial for building efficient, scalable LLM inference systems that can handle the sparse, unpredictable workloads that characterize modern AI applications.</p>]]></content><author><name>Yanying Lin</name></author><category term="Research" /><category term="Systems" /><category term="Serverless" /><category term="Pipeline Parallelism" /><category term="AI Infrastructure" /><summary type="html"><![CDATA[Exploring why pipeline parallelism is critical for LLM inference in serverless environments, where resource constraints and sparse workloads make tensor parallelism impractical, and how pipeline parallelism naturally addresses queuing delays.]]></summary></entry><entry><title type="html">FPGA in the AI Era: From Standalone Struggles to Co-Design Opportunities (Part 1)</title><link href="https://myzhibei.github.io/blog/2025/FPGA-LLM/" rel="alternate" type="text/html" title="FPGA in the AI Era: From Standalone Struggles to Co-Design Opportunities (Part 1)" /><published>2025-10-15T00:00:00+08:00</published><updated>2025-10-15T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2025/FPGA-LLM</id><content type="html" xml:base="https://myzhibei.github.io/blog/2025/FPGA-LLM/"><![CDATA[<p>In the AI era dominated by GPU acceleration, Field-Programmable Gate Arrays (FPGAs) occupy an ambiguous position. While FPGAs offer the promise of custom hardware acceleration and reconfigurability, they face fundamental challenges when deployed as standalone accelerators for AI workloads. The rapid evolution of GPU technology—with each generation delivering massive improvements in HBM bandwidth, memory capacity, and compute throughput—has left FPGAs struggling to find their niche in modern AI infrastructure.</p>
+
+<p>However, this narrative is beginning to shift. Rather than competing directly with GPUs, FPGAs may find their greatest value in co-design architectures that leverage pipeline parallelism between FPGA and GPU. By offloading specific operators to dedicated FPGA hardware, we can reduce GPU performance interference, enhance cache locality, and achieve custom acceleration for specialized computations. This hybrid approach represents a promising direction for FPGA deployment in production AI systems.</p>
+
+<h2 id="why-standalone-fpga-struggles">Why Standalone FPGA Struggles</h2>
+
+<p>When evaluated as standalone accelerators for AI inference or training, FPGAs face several fundamental limitations that make them difficult to justify compared to modern GPUs.</p>
+
+<p>The most critical limitation is the memory subsystem. Modern GPUs have achieved extraordinary memory bandwidth through High Bandwidth Memory (HBM). A modern GPU like the H100 can achieve around 3 TB/s of memory bandwidth with HBM3, while high-end FPGAs typically offer 100-200 GB/s with DDR4 or limited HBM support (820 GB/s for HBMe2 in Xilinx Versal). This 3-30× bandwidth gap is particularly problematic for AI workloads, which are often memory-bandwidth bound. Large Language Models require frequent access to model weights (a 7B model needs ~14 GB, a 70B model needs ~140 GB), and the iterative nature of inference means that memory bandwidth often caps throughput rather than compute capability. For FPGAs, even when equipped with HBM, the available bandwidth is typically a fraction of what GPUs offer. This fundamental limitation means that FPGAs cannot efficiently serve as drop-in replacements for GPUs in most AI workloads.</p>
+
+<p>GPU compute capability has advanced at a pace that FPGAs struggle to match. GPU generations from Volta to Ampere to Hopper have delivered 2-3× performance improvements every 2-3 years, while FPGA generations advance more slowly, with improvements focused on capacity and efficiency rather than raw throughput. Specialized tensor cores in modern GPUs provide massive acceleration for matrix operations that are central to AI workloads. While FPGAs can theoretically achieve high performance through custom logic design, the engineering effort required to match GPU performance for general AI workloads is often prohibitive. The programmability advantage of FPGAs is offset by the need for extensive RTL development and optimization.</p>
+
+<p>Beyond raw performance, FPGAs face practical challenges in development and deployment. RTL design and verification take significantly longer than GPU kernel development. GPU frameworks like PyTorch, TensorFlow, and CUDA have mature toolchains, while FPGA toolchains are more fragmented. FPGA bitstream management, partial reconfiguration, and runtime updates are more complex than GPU kernel updates. These factors make it difficult to justify FPGA deployment for general-purpose AI workloads where GPUs already excel.</p>
+
+<h2 id="network-acceleration-falls-short">Network Acceleration Falls Short</h2>
+
+<p>One area where FPGAs were expected to excel is network acceleration—offloading network processing, protocol handling, and data movement from CPUs. However, the reality has been more nuanced and often disappointing.</p>
+
+<p>FPGAs seemed well-suited for network acceleration because hardware-level packet processing could reduce CPU overhead, they could implement specialized network protocols in hardware, and they offered deterministic performance with predictable latency for real-time applications. However, several factors have limited FPGA adoption in network acceleration. Modern CPUs with high core counts and advanced instruction sets can handle network processing efficiently. Purpose-built SmartNICs like NVIDIA BlueField and Intel IPU have emerged as more integrated solutions. The trend toward software-defined networking reduces the need for hardware-level protocol customization. The development and deployment costs of FPGA-based network acceleration often don’t justify the marginal performance gains.</p>
+
+<p>For AI workloads specifically, FPGA-based network acceleration has shown limited benefit. Modern GPUs can communicate directly through NVLink and PCIe without significant CPU/network bottlenecks. While in-network computing is interesting, it has not shown clear advantages for typical AI serving patterns. The overhead of network protocols is often negligible compared to compute and memory access costs in AI workloads. The network acceleration use case, while technically feasible, has not emerged as a compelling reason to deploy FPGAs in AI infrastructure.</p>
+
+<h2 id="fpgagpu-co-design-through-pipeline-parallelism">FPGA+GPU Co-Design Through Pipeline Parallelism</h2>
+
+<p>If standalone FPGA deployment is challenging and network acceleration is lackluster, where does FPGA fit in the AI era? The answer lies in co-design architectures that combine FPGA and GPU through pipeline parallelism.</p>
+
+<p>Rather than using FPGA as a replacement for GPU, we can use it as a complementary accelerator that handles specific stages of the AI inference pipeline. The key insight is that not all operators in AI workloads are equally suited for GPU execution. Some operators benefit from GPU’s massive parallelism and high memory bandwidth, while others may have characteristics that make them better suited for FPGA’s custom hardware approach: irregular memory access patterns, bit-level or low-precision operations, custom data transformations, or operations that cause GPU resource contention.</p>
+
+<p>In a pipeline parallelism setup, the AI inference pipeline is divided into stages. For example, input data might flow through an FPGA stage, then a GPU stage, then another FPGA stage, and finally another GPU stage before producing output. Each stage processes data and passes results to the next stage. The FPGA and GPU can operate concurrently on different data items, maximizing overall throughput.</p>
+
+<p>The critical question is which operators should migrate to FPGA. Our exploration has focused on identifying operators that exhibit characteristics favorable to FPGA, such as custom bit manipulations or low-precision arithmetic, irregular control flow that doesn’t map well to GPU SIMD, small working sets that fit in FPGA on-chip memory, or operations that cause GPU cache pollution. We also look for operators that reduce GPU performance interference—those that compete with main computation for GPU resources, memory-intensive operations that saturate GPU memory bandwidth, or operations that fragment GPU memory allocation. Finally, we consider operators that benefit from custom hardware acceleration: operations that can be highly optimized in custom logic, transformations that require specialized data paths, or preprocessing/postprocessing that doesn’t need GPU’s full capabilities.</p>
+
+<h2 id="reducing-gpu-interference-and-enhancing-locality">Reducing GPU Interference and Enhancing Locality</h2>
+
+<p>Our exploration of FPGA+GPU pipeline parallelism has revealed several concrete benefits that justify this hybrid approach.</p>
+
+<p>One of the most significant benefits is reducing interference on GPU resources. In production AI serving systems, GPUs often run multiple workloads concurrently, leading to memory bandwidth contention where multiple operators compete for the same memory subsystem, cache pollution where operators with poor locality evict useful data from GPU caches, and SM resource contention where different operators compete for compute resources. By offloading specific operators to FPGA, we can isolate resource usage so FPGA operators don’t compete with GPU’s main computation, reduce memory pressure by freeing memory bandwidth for core computations, and improve GPU utilization by allowing the GPU to focus on operations it excels at, such as large matrix multiplications. This isolation is particularly valuable in multi-tenant serving environments where resource interference is a major concern.</p>
+
+<p>FPGAs can improve cache locality in several ways. FPGAs have distributed on-chip memory (BRAM/URAM) that can hold small working sets entirely on-chip, eliminating off-chip memory access. FPGA can preprocess data into formats that are more cache-friendly for GPU consumption. By moving certain operators off GPU, we reduce the number of memory access patterns competing for GPU cache space. For example, if an operator performs many small, scattered memory accesses that don’t benefit from GPU’s cache hierarchy, moving it to FPGA where we can design custom memory access patterns can improve overall system performance.</p>
+
+<p>FPGAs excel at custom hardware acceleration for specialized operations. They can implement custom number formats like 4-bit or 8-bit arithmetic with hardware optimized for those specific bit widths. Operations that require fine-grained bit manipulation are natural fits for FPGA. FPGA allows designing data paths specifically optimized for particular transformation patterns. For real-time applications, FPGA can provide predictable, low-latency execution. These custom accelerations can provide performance improvements that are difficult or impossible to achieve on general-purpose GPU hardware.</p>
+
+<p>Beyond individual operator performance, FPGA+GPU co-design offers system-level advantages. Each accelerator handles the workload it’s best suited for, leading to better resource utilization. We can scale FPGA and GPU resources independently based on workload characteristics. FPGA can be reconfigured for different operator sets as workloads evolve. This approach may enable using smaller or cheaper GPUs by offloading certain operations, improving cost efficiency.</p>
+
+<h2 id="challenges-in-co-design">Challenges in Co-Design</h2>
+
+<p>While FPGA+GPU co-design is promising, it introduces several challenges that must be addressed.</p>
+
+<p>Moving data between FPGA and GPU introduces overhead. Data must traverse PCIe between FPGA and GPU, typically at 16-32 GB/s, which is much lower than on-chip bandwidth. Each stage transition adds latency to the pipeline. Pipeline stages must coordinate to avoid stalls. These overheads must be carefully managed to ensure that the benefits of offloading outweigh the costs of data movement.</p>
+
+<p>Determining the optimal partitioning strategy is non-trivial. We need to decide which operators should run on FPGA versus GPU, how to balance pipeline stages to avoid bottlenecks, and how to handle dynamic workloads where operator characteristics change. This requires sophisticated profiling, analysis, and potentially runtime adaptation.</p>
+
+<p>Co-design architectures increase complexity. They require expertise in both FPGA and GPU development, more complex debugging and performance tuning, and additional deployment and management overhead. However, these challenges may be justified if the performance and efficiency gains are substantial.</p>
+
+<h2 id="future-directions">Future Directions</h2>
+
+<p>The future of FPGA in AI infrastructure is not as a standalone replacement for GPUs, but as a specialized co-processor in hybrid architectures. As AI workloads become more diverse and specialized, the ability to offload specific operations to custom hardware becomes increasingly valuable.</p>
+
+<p>Key research directions include automated operator migration tools that automatically identify FPGA-suitable operators and generate optimized implementations, dynamic pipeline reconfiguration systems that adapt FPGA configuration based on workload characteristics, tight integration architectures that minimize FPGA-GPU data movement overhead through closer integration, and domain-specific optimizations with specialized FPGA designs for emerging AI workloads such as sparse models, quantization, and specialized attention mechanisms.</p>
+
+<p>The lessons learned from exploring FPGA+GPU co-design will be valuable as we build the next generation of AI infrastructure that must efficiently handle increasingly diverse and specialized workloads.</p>
+
+<hr />
+
+<p>FPGA’s role in the AI era is not as a direct competitor to GPUs, but as a complementary accelerator in co-design architectures. While standalone FPGA deployment faces fundamental limitations in memory bandwidth, compute throughput, and development complexity, FPGA+GPU pipeline parallelism offers a promising path forward.</p>
+
+<p>By identifying FPGA-suitable operators and offloading them to dedicated hardware, we can reduce GPU performance interference, enhance cache locality, and achieve custom acceleration for specialized computations. This hybrid approach represents a pragmatic and potentially high-impact direction for FPGA deployment in production AI systems.</p>
+
+<p>The future of AI infrastructure will likely involve diverse accelerators working together, each optimized for different aspects of the workload. Understanding how to effectively combine FPGA and GPU through pipeline parallelism provides crucial insights for building efficient, scalable AI systems that can adapt to the evolving demands of modern AI workloads.</p>]]></content><author><name>Yanying Lin</name></author><category term="Research" /><category term="Systems" /><category term="AI Infrastructure" /><category term="Hardware Acceleration" /><summary type="html"><![CDATA[Exploring FPGA's evolving role in AI infrastructure: why standalone FPGA struggles against GPUs, the limitations of network acceleration, and the promising path forward through FPGA+GPU co-design for pipeline parallelism.]]></summary></entry><entry><title type="html">Diffusion Model Serving: Why It Matters for Systems</title><link href="https://myzhibei.github.io/blog/2025/Diffusion-Model/" rel="alternate" type="text/html" title="Diffusion Model Serving: Why It Matters for Systems" /><published>2025-07-15T00:00:00+08:00</published><updated>2025-07-15T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2025/Diffusion-Model</id><content type="html" xml:base="https://myzhibei.github.io/blog/2025/Diffusion-Model/"><![CDATA[<p>In today’s production AI clusters, two workloads dominate the inference landscape: Stable Diffusion (SD) serving and Large Language Model (LLM) serving. While LLMs have captured significant attention in both research and industry, diffusion models represent an equally critical and fundamentally different class of workloads that demand specialized system design. Understanding why diffusion models matter—and how they differ from LLMs at the system level—is essential for building efficient, scalable AI infrastructure.</p>
+
+<h2 id="why-stable-diffusion-serving">Why Stable Diffusion Serving?</h2>
+
+<p>Stable Diffusion and LLM serving are the two dominant inference workloads in production clusters, with both reaching 10,000+ QPS at peak. However, they exhibit dramatically different characteristics. SD generation takes tens of seconds per image, while LLM generation operates at token-level latency (milliseconds per token). SD operates through multi-stage pipelines with base models (1-20 GB), LoRA adapters (100 MB - 1 GB), and ControlNet modules (0.5-10 GB). Over 1.6 million possible pipeline combinations exist in production environments, creating unprecedented system complexity.</p>
+
+<p>The diffusion pipeline consists of three main stages:</p>
+
+<ol>
+  <li>Text encoding: CLIP text model performs a single forward pass to encode prompts into embeddings</li>
+  <li>Iterative denoising: UNet executes in a loop (typically 20-50 steps), where each step depends on the previous output</li>
+  <li>Image decoding: VAE decoder performs a single forward pass to convert latent features into pixel images</li>
+</ol>
+
+<p>This multi-stage, iterative architecture fundamentally differs from the autoregressive nature of LLMs, leading to distinct system requirements and optimization opportunities.</p>
+
+<h2 id="sd-vs-llm-core-differences">SD vs. LLM: Core Differences</h2>
+
+<p>From a systems perspective, Stable Diffusion and Large Language Models represent two fundamentally different computational paradigms.</p>
+
+<h3 id="computational-patterns">Computational Patterns</h3>
+
+<p>Stable Diffusion is a hybrid, multi-stage inference pipeline centered on iterative denoising through a diffusion model. Its computation is primarily convolution-based, with extreme demands on memory bandwidth and capacity, and exhibits clear stage transitions.</p>
+
+<p>Large Language Models are autoregressive, single-stage inference engines centered on attention mechanisms. Their computation is dominated by matrix multiplication (GEMM), with sensitivity to compute throughput and latency, and strict sequential dependencies.</p>
+
+<p>The forward diffusion process can be mathematically described as:</p>
+
+\[q(x_t | x_{t-1}) = \mathcal{N}(x_t; \sqrt{1-\beta_t}x_{t-1}, \beta_t I)\]
+
+<p>where $\beta_t$ is the noise schedule at step $t$. The reverse denoising process learns to approximate:</p>
+
+\[p_\theta(x_{t-1} | x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \Sigma_\theta(x_t, t))\]
+
+<p>This iterative nature means that each denoising step requires the full UNet forward pass, making activation memory the primary bottleneck rather than model weights.</p>
+
+<h3 id="memory-subsystem">Memory Subsystem</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">Dimension</th>
+      <th style="text-align: left">Stable Diffusion</th>
+      <th style="text-align: left">Large Language Models</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">Model Weights</td>
+      <td style="text-align: left">Relatively small (SD 1.5: ~2.5 GB total)</td>
+      <td style="text-align: left">Extremely large (7B: ~14 GB, 70B: ~140 GB)</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Activation Memory</td>
+      <td style="text-align: left">Peak activation is extremely high—each denoising step requires storing all UNet intermediate activations</td>
+      <td style="text-align: left">Depends on sequence length; KV Cache grows linearly with batch and sequence length</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Primary Bottleneck</td>
+      <td style="text-align: left">Activation memory capacity limits image resolution and batch size</td>
+      <td style="text-align: left">Model weights and KV Cache memory bandwidth</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For SD, the activation memory bottleneck becomes more severe at higher resolutions. A 1024×1024 image requires significantly more activation memory than a 512×512 image, even with the same model weights.</p>
+
+<h3 id="execution-flow">Execution Flow</h3>
+
+<p>Stable Diffusion uses a multi-stage, conditional pipeline. Text encoding performs a single forward pass. Iterative denoising executes UNet in a loop (20-50 steps), where each step depends on previous output. Image decoding performs a single forward pass.</p>
+
+<p>Large Language Models use an autoregressive, single-stage loop. The encoding phase performs one complete forward pass to generate initial KV Cache. The decoding phase executes in a loop, generating one token per iteration and updating KV Cache.</p>
+
+<p>The key difference: SD’s parallelism is limited by the sequential nature of denoising steps, while LLM’s parallelism is limited by the sequential nature of token generation.</p>
+
+<h3 id="system-optimization-focus">System Optimization Focus</h3>
+
+<p>For SD, the focus is on reducing activation memory, optimizing convolutions, and managing multi-stage pipelines. For LLMs, the focus is on maximizing GEMM efficiency, managing KV Cache, and achieving low-latency distributed inference.</p>
+
+<p>In summary, SD is a memory-capacity/bandwidth-sensitive image processing pipeline, while LLM is a compute-throughput/communication-sensitive sequence generation engine.</p>
+
+<h2 id="key-insights-from-production">Key Insights from Production</h2>
+
+<p>Our analysis of production clusters reveals several critical insights that challenge conventional wisdom about serving diffusion models.</p>
+
+<h3 id="insight-1-request-skew-causes-performance-inversion">Insight 1: Request Skew Causes Performance Inversion</h3>
+
+<p>Model popularity exhibits extreme inequality with a Gini coefficient of 0.876. The top 5% of models handle 78% of all requests. However, we observe a paradox: hot models complete in 29 seconds on average, while cold models complete in 25.8 seconds.</p>
+
+<p>The Gini coefficient, which measures inequality, is calculated as:</p>
+
+\[G = \frac{2 \sum_{i=1}^{n} i \cdot x_i}{n \sum_{i=1}^{n} x_i} - \frac{n+1}{n}\]
+
+<p>where $x_i$ represents the request count for model $i$ sorted in ascending order. A value of 0.876 indicates extreme concentration.</p>
+
+<p>Why the paradox? Resource contention offsets cache warmth benefits. When many requests target the same popular models, they compete for GPU memory, compute resources, and I/O bandwidth, negating the advantage of having models pre-loaded in cache.</p>
+
+<p>This has several implications. Head models need persistent multi-replica placement with GPU reservation. Tail models should rely on host/SSD tiers with prefetch triggers. Schedulers must route by popularity bands to separate hot and cold pools.</p>
+
+<h3 id="insight-2-resource-utilization-paradox">Insight 2: Resource Utilization Paradox</h3>
+
+<p>98.4% of pods operate below 20% GPU utilization, yet users experience high latency. Computation consumes only 15-30% of end-to-end latency, with 70-85% of time lost to orchestration overhead.</p>
+
+<p>This reveals that SD serving is memory-bandwidth bound, not compute-bound. Traditional GPU utilization metrics (which measure SM compute activity) are misleading for diffusion workloads. Memory bandwidth, not SM compute, caps throughput. Scheduler decisions must be memory-aware, not compute-centric. Utilization metrics must expose memory bandwidth saturation.</p>
+
+<h3 id="insight-3-cache-replacement-overhead">Insight 3: Cache Replacement Overhead</h3>
+
+<p>Base model refreshes cost 22.6 seconds (5× LoRA updates). During replacement bursts, network traffic increases by 345%, while disk I/O only increases by 26%, indicating that intermediate SSD cache layers are underutilized.</p>
+
+<p>This has several implications. Cost-aware eviction policies must weight load cost, reuse probability, and size. Replacement must coordinate with scaling to avoid cache thrashing. Simple LRU fails for heterogeneous component characteristics.</p>
+
+<h2 id="looking-forward-diffusion-based-llms">Looking Forward: Diffusion-based LLMs</h2>
+
+<p>As we look to the future, an exciting development is emerging: Diffusion-based Large Language Models. These models combine the iterative denoising process of diffusion models with the sequence generation capabilities of LLMs, creating a fundamentally new computational paradigm.</p>
+
+<p>This convergence will have profound implications for inference systems. The hybrid nature of diffusion-based LLMs will require rethinking how we allocate GPU memory, compute, and bandwidth. The iterative denoising process combined with attention mechanisms creates unique resource demands that differ from both pure diffusion models and traditional LLMs. Current kernels are optimized for either convolution-heavy (diffusion) or GEMM-heavy (LLM) workloads. Diffusion-based LLMs will require novel kernel designs that efficiently handle both computational patterns within a single forward pass. The memory access patterns will fundamentally change. We’ll need to manage both the activation memory from iterative denoising steps and the KV Cache from attention mechanisms, with complex interactions between these two memory systems. The entire inference stack—from scheduling and caching to memory management and kernel optimization—will need to be redesigned to handle this new workload class efficiently.</p>
+
+<p>This represents a fascinating and important research direction that will reshape the foundations of AI inference systems. Understanding how to serve diffusion models effectively today provides crucial insights for building the next generation of AI infrastructure that can handle these emerging hybrid models.</p>
+
+<hr />
+<p>Diffusion model serving presents unique challenges that cannot be addressed by simply adapting LLM serving techniques. The multi-stage, memory-bandwidth-bound nature of diffusion pipelines requires specialized system design. As diffusion-based LLMs emerge, the lessons learned from production diffusion serving will become even more critical, as these hybrid models will require us to rethink resource usage, CUDA kernels, and data access patterns at a fundamental level.</p>
+
+<p>The future of AI inference systems will be shaped by our ability to efficiently serve these diverse and evolving workloads. Understanding diffusion models is not just about today’s image generation—it’s about preparing for the next generation of AI systems.</p>]]></content><author><name>Yanying Lin</name></author><category term="Research" /><category term="Systems" /><category term="Diffusion Models" /><category term="AI Infrastructure" /><summary type="html"><![CDATA[Exploring why diffusion models matter for AI infrastructure, their fundamental differences from LLMs, and insights from production serving systems. A deep dive into computational patterns, memory subsystems, and the future of diffusion-based LLMs.]]></summary></entry><entry><title type="html">HZAU国际影城(HZAU-Cineplex)——软件概要设计说明书(HLD)</title><link href="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E6%A6%82%E8%A6%81%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(HLD)/" rel="alternate" type="text/html" title="HZAU国际影城(HZAU-Cineplex)——软件概要设计说明书(HLD)" /><published>2020-07-01T00:00:00+08:00</published><updated>2020-07-01T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)%E2%80%94%E2%80%94%E8%BD%AF%E4%BB%B6%E6%A6%82%E8%A6%81%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(HLD)</id><content type="html" xml:base="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E6%A6%82%E8%A6%81%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(HLD)/"><![CDATA[<p><strong>**分工角色</strong>**</p>
+
+<p><strong>　　彭士杰：</strong>组长，主要负责编写目的、范围、术语和缩略词、参考资料、用户接口、数据结构、文件和数据库结构、文档编制，说明书各部分完善等，需求复审部分负责整体需求复审等</p>
+
+<p>　　<strong>常家乐：</strong>主要负责需求交叉索引等，需求复审部分负责售票情况统计、电影推荐等，模块功能概述部分负责用户电影评论模块、管理员订单查询模块、管理员影片推荐模块等</p>
+
+<p>　<strong>　徐浩春：</strong>主要负责软件体系结构、说明书审核等，需求复审部分负责订单管理、订退票等，模块功能概述部分负责退订票模块、订单管理模块等</p>
+
+<p>　<strong>　陶   威：</strong>主要负责集成策略、测试方案等，需求复审部分负责票房统计、结算管理等，模块功能概述部分负责管理员票房数据管理&amp;结算管理模块等</p>
+
+<p>　　<strong>王南松：</strong>主要负责外部接口，需求复审部分负责场次编排、影片录入等，模块功能概述部分负责用户浏览影片模块、管理员影片录入模块、管理员排片模块等</p>
+
+<p>　　<strong>李铜平：</strong>主要负责体系结构完善，需求复审部分负责管理账户、会员管理等，模块功能概述部分负责用户个人信息管理模块、用户会员办理模块、管理员会员管理模块等</p>
+
+<p><strong>**进度</strong>**</p>
+
+<p>　　</p>
+
+<p><strong>　　2020-05-16</strong></p>
+
+<p><strong>　　　　完成编写目的、系统目标、主要软件需求、约束限制、术语、缩略词、参考资料部分</strong></p>
+
+<p><strong>　　2020-05-17</strong></p>
+
+<p><strong>　　　　完成系统体系结构</strong></p>
+
+<p><strong>　　2020-05-17~2020-05-20</strong></p>
+
+<p><strong>　　　　进行需求复审</strong></p>
+
+<p><strong>　　2020-05-17~2020-05-24</strong></p>
+
+<p><strong>　　　　进行系统数据结构、文件和数据库结构设计</strong></p>
+
+<p>**　　<strong>2020-05-20~2020-05-27**</strong></p>
+
+<p><strong>　　　　进行模块设计和用户接口设计</strong></p>
+
+<p><strong>　　2020-05-27~2020-05-29</strong></p>
+
+<p><strong>　　　　完成内部模块间关系和接口设计描述</strong></p>
+
+<p><strong>　　2020-05-20~2020-05-29</strong></p>
+
+<p><strong>　　　　进行外部接口设计</strong></p>
+
+<p><strong>　　2020-05-28</strong></p>
+
+<p><strong>　　　　完成需求交叉索引</strong></p>
+
+<p><strong>　　2020-05-30</strong></p>
+
+<p><strong>　　　　完成测试方案初步</strong></p>
+
+<p><strong>　　2020-05-31</strong></p>
+
+<p><strong>　　　　完成第一版最终审核</strong></p>
+
+<p>版权声明：本文为博客园博主「<a href="https://www.cnblogs.com/myzhibei/">MY知北</a>」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。原文链接：<a href="https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex-HLD.html">https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex-HLD.html</a></p>]]></content><author><name>Shijie Peng</name></author><category term="python" /><summary type="html"><![CDATA[**分工角色**]]></summary></entry><entry><title type="html">HZAU国际影城(HZAU-Cineplex)——软件测试计划(Testing-Plan)</title><link href="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E8%AE%A1%E5%88%92(Testing-Plan)/" rel="alternate" type="text/html" title="HZAU国际影城(HZAU-Cineplex)——软件测试计划(Testing-Plan)" /><published>2020-07-01T00:00:00+08:00</published><updated>2020-07-01T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)%E2%80%94%E2%80%94%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E8%AE%A1%E5%88%92(Testing-Plan)</id><content type="html" xml:base="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E8%AE%A1%E5%88%92(Testing-Plan)/"><![CDATA[<p><strong>**分工角色</strong>**</p>
+
+<p><strong>　　彭士杰：</strong>组长，主要负责编写目的、背景、定义、参考资料、任务目标、测试资料、文档编制，说明书各部分改进完善等</p>
+
+<p>　　<strong>常家乐：</strong>主要负责测试用例设计的用户电影评论模块、管理员订单查询模块、管理员影片推荐模块等</p>
+
+<p>　<strong>　徐浩春：</strong>主要负责计划审核、测试用例设计的退订票模块、订单管理模块等</p>
+
+<p>　<strong>　陶   威：</strong>主要负责测试环境、总结、测试用例设计的管理员票房数据管理&amp;结算管理模块等</p>
+
+<p>　　<strong>王南松：</strong>主要负责测试用例设计的用户浏览影片模块、管理员影片录入模块、管理员排片模块等</p>
+
+<p>　　<strong>李铜平：</strong>主要负责测试用例设计的用户个人信息管理模块、用户会员办理模块、管理员会员管理模块等</p>
+
+<p><strong>**进度</strong>**</p>
+
+<p>　</p>
+
+<p><strong>　　2020-06-02</strong></p>
+
+<p><strong>　　　　完成编写目的、项目背景、定义、参考资料、需求概述部分</strong></p>
+
+<p><strong>　　2020-06-02~2020-06-04</strong></p>
+
+<p><strong>　　　　完成测试用例设计、测试环境、测试用例执行</strong></p>
+
+<p><strong>　　2020-06-05</strong></p>
+
+<p><strong>　　　　完成结论和建议</strong></p>
+
+<p><strong>　　2020-06-06</strong></p>
+
+<p><strong>　　　　完成第一版最终审核</strong></p>
+
+<p>版权声明：本文为博客园博主「<a href="https://www.cnblogs.com/myzhibei/">MY知北</a>」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。原文链接：<a href="https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex-Testing-Plan.html">https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex-Testing-Plan.html</a></p>]]></content><author><name>Shijie Peng</name></author><category term="python" /><summary type="html"><![CDATA[**分工角色**]]></summary></entry><entry><title type="html">HZAU国际影城(HZAU-Cineplex)——软件详细设计说明书(LLD)</title><link href="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(LLD)/" rel="alternate" type="text/html" title="HZAU国际影城(HZAU-Cineplex)——软件详细设计说明书(LLD)" /><published>2020-07-01T00:00:00+08:00</published><updated>2020-07-01T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)%E2%80%94%E2%80%94%E8%BD%AF%E4%BB%B6%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(LLD)</id><content type="html" xml:base="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(LLD)/"><![CDATA[<p><strong>**分工角色</strong>**</p>
+
+<p><strong>　　彭士杰：</strong>组长，主要负责编写目的、背景、定义、参考资料、需求概述、文档编制，说明书各部分改进完善等</p>
+
+<p>　　<strong>常家乐：</strong>主要负责性能部分，模块基本信息、模块设计及模块接口、模块处理逻辑、算法部分负责用户电影评论模块、管理员订单查询模块、管理员影片推荐模块等</p>
+
+<p>　<strong>　徐浩春：</strong>主要负责软件结构，说明书审核等，模块基本信息、模块设计及模块接口、模块处理逻辑、算法部分负责退订票模块、订单管理模块等</p>
+
+<p>　<strong>　陶   威：</strong>主要负责模块基本信息、模块设计及模块接口、模块处理逻辑、算法部分的管理员票房数据管理&amp;结算管理模块等</p>
+
+<p>　　<strong>王南松：</strong>主要负责测试计划部分，模块基本信息、模块设计及模块接口、模块处理逻辑、算法部分负责用户浏览影片模块、管理员影片录入模块、管理员排片模块等</p>
+
+<p>　　<strong>李铜平：</strong>主要负责模块设计改进完善，模块基本信息、模块设计及模块接口、模块处理逻辑、算法部分负责用户个人信息管理模块、用户会员办理模块、管理员会员管理模块等</p>
+
+<p><strong>**进度</strong>**</p>
+
+<p>　　</p>
+
+<p><strong>　　2020-05-20~2020-05-27</strong></p>
+
+<p><strong>　　　　完成模块基本信息和功能概述</strong></p>
+
+<p><strong>　　2020-05-20~2020-05-29</strong></p>
+
+<p><strong>　　　　完成接口</strong></p>
+
+<p><strong>　　2020-05-28</strong></p>
+
+<p><strong>　　　　完成编写目的、项目背景、定义、参考资料、需求概述部分</strong></p>
+
+<p><strong>　　2020-05-30</strong></p>
+
+<p><strong>　　　　完成说明书性能部分</strong></p>
+
+<p><strong>　　2020-06-01</strong></p>
+
+<p><strong>　　　　完成模块处理逻辑和测试计划初步</strong></p>
+
+<p><strong>　　2020-06-02</strong></p>
+
+<p><strong>　　　　完成第一版最终审核</strong></p>
+
+<p>版权声明：本文为博客园博主「<a href="https://www.cnblogs.com/myzhibei/">MY知北</a>」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。原文链接：<a href="https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex-LLD.html">https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex-LLD.html</a></p>]]></content><author><name>Shijie Peng</name></author><category term="python" /><summary type="html"><![CDATA[**分工角色**]]></summary></entry><entry><title type="html">PowerDesigner物理模型设置约束条件(主码、外码、check约束、非空约束、默认值)（转载）</title><link href="https://myzhibei.github.io/blog/2020/PowerDesigner%E7%89%A9%E7%90%86%E6%A8%A1%E5%9E%8B%E8%AE%BE%E7%BD%AE%E7%BA%A6%E6%9D%9F%E6%9D%A1%E4%BB%B6(%E4%B8%BB%E7%A0%81-%E5%A4%96%E7%A0%81-check%E7%BA%A6%E6%9D%9F-%E9%9D%9E%E7%A9%BA%E7%BA%A6%E6%9D%9F-%E9%BB%98%E8%AE%A4%E5%80%BC)-%E8%BD%AC%E8%BD%BD/" rel="alternate" type="text/html" title="PowerDesigner物理模型设置约束条件(主码、外码、check约束、非空约束、默认值)（转载）" /><published>2020-05-01T00:00:00+08:00</published><updated>2020-05-01T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2020/PowerDesigner%E7%89%A9%E7%90%86%E6%A8%A1%E5%9E%8B%E8%AE%BE%E7%BD%AE%E7%BA%A6%E6%9D%9F%E6%9D%A1%E4%BB%B6(%E4%B8%BB%E7%A0%81%E3%80%81%E5%A4%96%E7%A0%81%E3%80%81check%E7%BA%A6%E6%9D%9F%E3%80%81%E9%9D%9E%E7%A9%BA%E7%BA%A6%E6%9D%9F%E3%80%81%E9%BB%98%E8%AE%A4%E5%80%BC)%EF%BC%88%E8%BD%AC%E8%BD%BD%EF%BC%89</id><content type="html" xml:base="https://myzhibei.github.io/blog/2020/PowerDesigner%E7%89%A9%E7%90%86%E6%A8%A1%E5%9E%8B%E8%AE%BE%E7%BD%AE%E7%BA%A6%E6%9D%9F%E6%9D%A1%E4%BB%B6(%E4%B8%BB%E7%A0%81-%E5%A4%96%E7%A0%81-check%E7%BA%A6%E6%9D%9F-%E9%9D%9E%E7%A9%BA%E7%BA%A6%E6%9D%9F-%E9%BB%98%E8%AE%A4%E5%80%BC)-%E8%BD%AC%E8%BD%BD/"><![CDATA[<p>主键：<br />
+双击实体进入，属性界面点击keys选项卡，选中主键，右击点击properties（属性）<br />
+<img src="https://img-blog.csdnimg.cn/20200501193209888.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>红圈内自定义主键名称<br />
+<img src="https://img-blog.csdnimg.cn/20200501193221602.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>2．外码<br />
+双击reference，选择integrity（完整性）选项卡，自定义外键名称<br />
+<img src="https://img-blog.csdnimg.cn/20200501193232115.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>3.CHECK约束<br />
+方法一（列约束）：双击实体进入，属性界面点击column选项卡，选中要添加约束的字段名，右击点击properties（属性）</p>
+
+<p><img src="https://img-blog.csdnimg.cn/20200501193254238.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>点击additional checks，自定义约束名同时编写约束代码</p>
+
+<p><img src="https://img-blog.csdnimg.cn/202005011933047.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>方法二（表约束）：双击实体进入，属性界面点击rules选项卡，点击create an object 选项，选中新建的object，右击点击属性<br />
+<img src="https://img-blog.csdnimg.cn/20200501193311377.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>在常规选项卡中自定义约束名称，并把type改为constraint</p>
+
+<p><img src="https://img-blog.csdnimg.cn/2020050119331799.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>然后选择expression选项卡，编写约束代码。</p>
+
+<p><img src="https://img-blog.csdnimg.cn/20200501193323290.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>4.非空约束：<br />
+双击实体进入，属性界面点击column选项卡，选中要添加约束的字段名，右击点击properties（属性）点击勾选mandatory即可</p>
+
+<p><img src="https://img-blog.csdnimg.cn/20200501193331400.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>
+
+<p>5.默认值约束：<br />
+双击实体进入，属性界面点击column选项卡，选中要添加约束的字段名，右击点击properties（属性），点击基本检查选项卡，设置默认值。<br />
+<img src="https://img-blog.csdnimg.cn/20200501193338770.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述" /></p>]]></content><author><name>Shijie Peng</name></author><category term="python" /><summary type="html"><![CDATA[主键： 双击实体进入，属性界面点击keys选项卡，选中主键，右击点击properties（属性）]]></summary></entry><entry><title type="html">HZAU国际影城(HZAU-Cineplex)——需求规格说明书(SRS)</title><link href="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E9%9C%80%E6%B1%82%E8%A7%84%E6%A0%BC%E8%AF%B4%E6%98%8E%E4%B9%A6(SRS)/" rel="alternate" type="text/html" title="HZAU国际影城(HZAU-Cineplex)——需求规格说明书(SRS)" /><published>2020-04-22T00:00:00+08:00</published><updated>2020-04-22T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)%E2%80%94%E2%80%94%E9%9C%80%E6%B1%82%E8%A7%84%E6%A0%BC%E8%AF%B4%E6%98%8E%E4%B9%A6(SRS)</id><content type="html" xml:base="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E9%9C%80%E6%B1%82%E8%A7%84%E6%A0%BC%E8%AF%B4%E6%98%8E%E4%B9%A6(SRS)/"><![CDATA[<p><strong>**分工角色：</strong>**</p>
+
+<p><strong>**　　所有人共同参与重要部分(功能需求目标，数据库，界面等)讨论</strong>**</p>
+
+<p>　　<strong>彭士杰：</strong>组长以及主要负责后台界面初稿、数据字典改进、数据库描述、整体说明书完善等，功能部分负责整体功能描述</p>
+
+<p>　　<strong>常家乐：</strong>主要负责数据精度、时间特性等，功能部分负责售票情况统计、电影推荐</p>
+
+<p>　　<strong>徐浩春：</strong>主要负责数据字典，用户界面初稿等，功能部分负责订单管理</p>
+
+<p>　　<strong>陶威：</strong>主要负责灵活性、用户及管理界面完善等，功能部分负责票房统计、结算管理</p>
+
+<p>　　<strong>王南松：</strong>主要负责验收标准、质量属性等，功能部分负责场次编排、影片录入</p>
+
+<p>　　<strong>李铜平：</strong>主要负责软硬件接口、数据字典，用户登录界面框架等，功能部分负责管理账户、会员管理</p>
+
+<p><strong>**进度：</strong>**</p>
+
+<p><strong>**</strong>　　2020-04-10**</p>
+
+<p><strong>　　　　进行项目来源及背景、项目目标、系统功能概述讨论</strong></p>
+
+<p><strong>　　2020-04-10~2020-04-14</strong></p>
+
+<p><strong>　　　　完成系统功能组成和功能编号</strong></p>
+
+<p>**　　<strong>2020-04-14**</strong></p>
+
+<p><strong>　　　　对子功能进行详细讨论，进行子功能分工，</strong></p>
+
+<p><strong>　　2020-04-14~2020-04-20</strong></p>
+
+<p><strong>　　　　完成各个子功能的功能描述（包含用例图及类图），完成后台管理界面，用户管理登录界面</strong></p>
+
+<p><strong>　　2020-04-20</strong></p>
+
+<p><strong>　　　　进行后续部分分工，确定数据库基本框架</strong></p>
+
+<p><strong>　　2020-04-20~2020-04-23</strong></p>
+
+<p><strong>　　　　完善数据库</strong></p>
+
+<p>**　　<strong>2020-04-23**</strong></p>
+
+<p><strong>　　　　确定数据库</strong></p>
+
+<p><strong>　　2020-04-20~2020-04-25</strong></p>
+
+<p><strong>　　　　完成参考资料、术语和缩略词、数据精度、时间特性、灵活性、软件硬件接口及验收标准</strong></p>
+
+<p><strong>　　2020-04-26</strong></p>
+
+<p><strong>　　　　完成第一版最终审核</strong></p>
+
+<p><strong>　　2020-05-06</strong></p>
+
+<p><strong>　　　　新增数据流图、逻辑模型图、物理模型图，完善数据字典</strong></p>
+
+<p>版权声明：本文为博客园博主「<a href="https://www.cnblogs.com/myzhibei/">MY知北</a>」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。原文链接：<a href="https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex-SRS.html">https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex-SRS.html</a></p>]]></content><author><name>Shijie Peng</name></author><category term="python" /><summary type="html"><![CDATA[**分工角色：**]]></summary></entry><entry><title type="html">HZAU国际影城(HZAU-Cineplex)——项目提出确定选题</title><link href="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E9%A1%B9%E7%9B%AE%E6%8F%90%E5%87%BA%E7%A1%AE%E5%AE%9A%E9%80%89%E9%A2%98/" rel="alternate" type="text/html" title="HZAU国际影城(HZAU-Cineplex)——项目提出确定选题" /><published>2020-04-22T00:00:00+08:00</published><updated>2020-04-22T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)%E2%80%94%E2%80%94%E9%A1%B9%E7%9B%AE%E6%8F%90%E5%87%BA%E7%A1%AE%E5%AE%9A%E9%80%89%E9%A2%98</id><content type="html" xml:base="https://myzhibei.github.io/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E9%A1%B9%E7%9B%AE%E6%8F%90%E5%87%BA%E7%A1%AE%E5%AE%9A%E9%80%89%E9%A2%98/"><![CDATA[<p><strong>2020-03-06</strong></p>
+
+<p><strong>正式通过小组讨论确定选题</strong></p>
+
+<p><strong>项目题目：</strong></p>
+
+<p>　　HZAU国际影城</p>
+
+<p><strong>项目介绍：</strong></p>
+
+<p>　　帮助影院管理人员对电影进行排片、售票、统计、报表等，方便用户根据喜好进行线上选座、订票、退票。</p>
+
+<p><strong>小组成员：</strong></p>
+
+<p>　　彭士杰、常家乐、徐浩春、陶威、王南松、李铜平</p>
+
+<p>版权声明：本文为博客园博主「<a href="https://www.cnblogs.com/myzhibei/">MY知北</a>」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。原文链接：<a href="https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex.html">https://www.cnblogs.com/myzhibei/p/HZAU-Cineplex.html</a></p>]]></content><author><name>Shijie Peng</name></author><category term="python" /><summary type="html"><![CDATA[2020-03-06]]></summary></entry><entry><title type="html">道路驾驶技能考试详解</title><link href="https://myzhibei.github.io/blog/2020/%E9%81%93%E8%B7%AF%E9%A9%BE%E9%A9%B6%E6%8A%80%E8%83%BD%E8%80%83%E8%AF%95%E8%AF%A6%E8%A7%A3(%E7%A7%91%E7%9B%AE%E4%B8%89)/" rel="alternate" type="text/html" title="道路驾驶技能考试详解" /><published>2020-01-21T00:00:00+08:00</published><updated>2020-01-21T00:00:00+08:00</updated><id>https://myzhibei.github.io/blog/2020/%E9%81%93%E8%B7%AF%E9%A9%BE%E9%A9%B6%E6%8A%80%E8%83%BD%E8%80%83%E8%AF%95%E8%AF%A6%E8%A7%A3(%E7%A7%91%E7%9B%AE%E4%B8%89)</id><content type="html" xml:base="https://myzhibei.github.io/blog/2020/%E9%81%93%E8%B7%AF%E9%A9%BE%E9%A9%B6%E6%8A%80%E8%83%BD%E8%80%83%E8%AF%95%E8%AF%A6%E8%A7%A3(%E7%A7%91%E7%9B%AE%E4%B8%89)/"><![CDATA[<h1 id="科目三">科目三</h1>
+
+<h2 id="一上车准备">一、上车准备</h2>
+
+<p>1、调座位，调后视镜（右四分之一车身，左天地上下对半分），跟工作人员说准备好了，工作人员点开始考试，下车关好门，到车右后方按开关，提示经过车尾，再至车左前按开关，提示经过车头，上车关好门，系安全带，点火，绕车到点火共50s</p>
+
+<h2 id="二夜间灯光">二、夜间灯光</h2>
+
+<p>五个</p>
+
+<p><strong>科目三模拟夜间灯光考试解析技巧版</strong></p>
+
+<p><img src="https://gitee.com/myzhibei/img/raw/master/%E7%A7%91%E7%9B%AE%E4%B8%89%E5%A4%9C%E9%97%B4%E7%81%AF%E5%85%89.png" alt="科目三夜间灯光" /></p>
+
+<h2 id="三起步">三、起步</h2>
+
+<h4 id="1打左转向按喇叭踩离合挂1挡松手刹慢抬离合起步走">1、打左转向，按喇叭，踩离合，挂1挡，松手刹，慢抬离合起步走</h4>
+
+<h4 id="2当车辆行驶平稳后松左脚走十米左右关闭转向灯再踩油门提速发动机转速在1200-1500rmin不能超过2000转车辆行驶速度在15kmh左右迅速松右脚油门踩左脚离合由1挡换2挡松离合踩油门加速至25kmh左右松右脚油门踩左脚离合由2挡换3挡松离合继续踩油门保持25-30平稳行驶">2、当车辆行驶平稳后，松左脚，走十米左右关闭转向灯，再踩油门提速，发动机转速在1200-1500r/min，不能超过2000转，车辆行驶速度在15KM/h左右，迅速松右脚油门，踩左脚离合，由1挡换2挡，松离合，踩油门，加速至25KM/h左右，松右脚油门，踩左脚离合，由2挡换3挡，松离合，继续踩油门保持25-30平稳行驶；</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>挡位</th>
+      <th>最长连续行驶距离</th>
+      <th>最低行驶速度</th>
+      <th>最高行驶速度</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1挡起步</td>
+      <td>100m</td>
+      <td> </td>
+      <td>20km/h</td>
+    </tr>
+    <tr>
+      <td>2挡过渡</td>
+      <td>150m</td>
+      <td>10km/h</td>
+      <td>30km/h</td>
+    </tr>
+    <tr>
+      <td>3挡走路</td>
+      <td> </td>
+      <td>20km/h</td>
+      <td>40km/h</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="四加减挡">四、加减挡</h2>
+
+<h4 id="3挡换4挡4挡减3挡主动做无指令">3挡换4挡，4挡减3挡，主动做，无指令</h4>
+
+<p>踩油门，当速度提到30km/h以上时，松右脚油门，踩左脚离合，由3挡换4挡，松左脚离合，踩右脚油门，继续加速至接近40km/h，抬右脚油门，踩右脚刹车减速，减速至接近30km/h，抬右脚刹车，踩左脚离合，由4挡换3挡，松左脚离合，踩右脚油门保持25-30平稳行驶；</p>
+
+<h2 id="五八脚刹车">五、八脚刹车</h2>
+
+<h3 id="1五脚指令前方会车前方路口直行前方路口左转前方路口右转请选择合适地点掉头">1、五脚指令：前方会车、前方路口直行、前方路口左转、前方路口右转、请选择合适地点掉头</h3>
+
+<p>点一脚刹车并伴随相关动作</p>
+
+<p>前方会车、前方路口直行：仅点一脚刹车</p>
+
+<p>前方路口左转、前方路口右转：点一脚刹车不停，然后打左/右转向灯，速度控制在20-25，需要过红绿灯减成2挡，转过来后关闭转向灯，所有转向灯不得低于3s不得超过30s，然后踩油门加速，换3挡，踩油门继续保持25-35平稳行驶</p>
+
+<h3 id="2三脚观察学校区域公交车站人行横道">2、三脚观察：学校区域、公交车站、人行横道</h3>
+
+<p>当肩膀与指示牌杆并齐点一脚刹车，可迟一点（50m以内）不能早</p>
+
+<h2 id="六请保持直线行驶">六、请保持直线行驶</h2>
+
+<p>双手轻握方向盘，眼光看路的尽头，走车道中间，方向盘微微晃动，晃动幅度不超过5°，幅度小，频率高，左右行驶偏差不大于25cm，身心放松；</p>
+
+<p>雨刮器 下压一次刮一次，上抬档位渐进变快</p>
+
+<h2 id="七超车">七、超车</h2>
+
+<p>请超越前方车辆，在150m之内完成超车，先打左转向灯，3s后观察后视镜左后方，进入左侧车道，再关闭左转向灯，摆正车辆，回正方向，提速，超车速度不能低于25km/h，稳在30km/h完成超车，待走过右侧车辆后，再打右转向灯，3s后观察后视镜右后方，进入右方车道</p>
+
+<h2 id="八变道">八、变道</h2>
+
+<p>有语音指令变道，前方请变更车道，听到指令后在50m内完成变道</p>
+
+<p>自由变更车道，前方有障碍</p>
+
+<p>打左转向灯，3s后观察后视镜左后方，进入左侧车道，再关闭左转向灯，摆正车辆，回正方向</p>
+
+<h2 id="九掉头">九、掉头</h2>
+
+<p>打左转向灯，3s，看左后视镜，（注意此时右脚在油门上应<strong>换至刹车</strong>）踩右脚刹车减速至20km/h，松右脚刹车，踩左脚离合，由3挡换2挡，松左脚离合，看左后视镜，无车辆后，向左打满转向，调整车身，回正方向，关闭转向灯（一般回正时自动关闭），踩右脚油门提速至25km/h，松右脚油门，踩左脚离合，由2挡换3挡，抬左脚离合，踩右脚油门，保持25-30平稳行驶。</p>
+
+<h2 id="十请靠边停车">十、请靠边停车</h2>
+
+<p>听到指令后，（注意此时右脚在油门上应<strong>换至刹车</strong>）踩右脚刹车减速至接近20km/h，抬右脚刹车（<strong>不放在油门上</strong>），踩左脚离合，由3挡换至2挡，抬左脚离合，找点，到点后，踩左脚离合带踩右脚刹车停车，迅速空挡，松左脚离合，不松刹车，检查边线距离，大于50cm扣100‘，大于30cm扣10’，车身出线扣100‘，车轮压线扣100’；若过大，进行二次停车，踩左脚离合，挂1档，慢抬离合，抬至半联动时松右脚刹车（不放在油门上），继续行驶平稳时应松开左脚离合，至车辆平稳后再踩刹车找点，到点之后踩左脚离合带踩右脚刹车停车，迅速空挡，松左脚离合，无问题后打右转向灯，3s后拉手刹交卷，向内转动钥匙<strong>熄火</strong>，解安全带，开门下车关好门，熄火后15s内未下车考试结束数据丢失。</p>
+
+<h2 id="考试线路">考试线路</h2>
+
+<p><img src="https://gitee.com/myzhibei/img/raw/master/%E4%B8%80%E5%8F%B7%E7%BA%BF.png" alt="" /></p>
+
+<p><img src="https://gitee.com/myzhibei/img/raw/master/%E4%BA%8C%E5%8F%B7%E7%BA%BF.png" alt="" /></p>
+
+<p><img src="https://gitee.com/myzhibei/img/raw/master/%E4%B8%89%E5%8F%B7%E7%BA%BF.png" alt="" /></p>
+
+<p>附</p>
+
+<p><img src="https://gitee.com/myzhibei/img/raw/master/my%E7%9F%A5%E5%8C%97.png" alt="img" style="zoom: 10%;" /></p>
+
+<p><strong>本文作者</strong>：<strong><a href="https://myzhibei.github.io">MY知北</a></strong>
+<strong>关于博主</strong>：评论和私信会在第一时间回复。或者<a href="https://msg.cnblogs.com/msg/send/myzhibei">直接私信</a>我。
+<strong>版权声明</strong>：本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">BY-NC-SA</a> 许可协议。转载请注明出处！</p>]]></content><author><name>MYZHIBEI</name></author><category term="Blog" /><summary type="html"><![CDATA[科目三 一、上车准备 1、调座位，调后视镜（右四分之一车身，左天地上下对半分），跟工作人员说准备好了，工作人员点开始考试，下车关好门，到车右后方按开关，提示经过车尾，再至车左前按开关，提示经过车头，上车关好门，系安全带，点火，绕车到点火共50s 二、夜间灯光 五个 科目三模拟夜间灯光考试解析技巧版 三、起步 1、打左转向，按喇叭，踩离合，挂1挡，松手刹，慢抬离合起步走 2、当车辆行驶平稳后，松左脚，走十米左右关闭转向灯，再踩油门提速，发动机转速在1200-1500r/min，不能超过2000转，车辆行驶速度在15KM/h左右，迅速松右脚油门，踩左脚离合，由1挡换2挡，松离合，踩油门，加速至25KM/h左右，松右脚油门，踩左脚离合，由2挡换3挡，松离合，继续踩油门保持25-30平稳行驶； 挡位 最长连续行驶距离 最低行驶速度 最高行驶速度 1挡起步 100m   20km/h 2挡过渡 150m 10km/h 30km/h 3挡走路   20km/h 40km/h 四、加减挡 3挡换4挡，4挡减3挡，主动做，无指令 踩油门，当速度提到30km/h以上时，松右脚油门，踩左脚离合，由3挡换4挡，松左脚离合，踩右脚油门，继续加速至接近40km/h，抬右脚油门，踩右脚刹车减速，减速至接近30km/h，抬右脚刹车，踩左脚离合，由4挡换3挡，松左脚离合，踩右脚油门保持25-30平稳行驶； 五、八脚刹车 1、五脚指令：前方会车、前方路口直行、前方路口左转、前方路口右转、请选择合适地点掉头 点一脚刹车并伴随相关动作 前方会车、前方路口直行：仅点一脚刹车 前方路口左转、前方路口右转：点一脚刹车不停，然后打左/右转向灯，速度控制在20-25，需要过红绿灯减成2挡，转过来后关闭转向灯，所有转向灯不得低于3s不得超过30s，然后踩油门加速，换3挡，踩油门继续保持25-35平稳行驶 2、三脚观察：学校区域、公交车站、人行横道 当肩膀与指示牌杆并齐点一脚刹车，可迟一点（50m以内）不能早 六、请保持直线行驶 双手轻握方向盘，眼光看路的尽头，走车道中间，方向盘微微晃动，晃动幅度不超过5°，幅度小，频率高，左右行驶偏差不大于25cm，身心放松； 雨刮器 下压一次刮一次，上抬档位渐进变快 七、超车 请超越前方车辆，在150m之内完成超车，先打左转向灯，3s后观察后视镜左后方，进入左侧车道，再关闭左转向灯，摆正车辆，回正方向，提速，超车速度不能低于25km/h，稳在30km/h完成超车，待走过右侧车辆后，再打右转向灯，3s后观察后视镜右后方，进入右方车道 八、变道 有语音指令变道，前方请变更车道，听到指令后在50m内完成变道 自由变更车道，前方有障碍 打左转向灯，3s后观察后视镜左后方，进入左侧车道，再关闭左转向灯，摆正车辆，回正方向 九、掉头 打左转向灯，3s，看左后视镜，（注意此时右脚在油门上应换至刹车）踩右脚刹车减速至20km/h，松右脚刹车，踩左脚离合，由3挡换2挡，松左脚离合，看左后视镜，无车辆后，向左打满转向，调整车身，回正方向，关闭转向灯（一般回正时自动关闭），踩右脚油门提速至25km/h，松右脚油门，踩左脚离合，由2挡换3挡，抬左脚离合，踩右脚油门，保持25-30平稳行驶。 十、请靠边停车 听到指令后，（注意此时右脚在油门上应换至刹车）踩右脚刹车减速至接近20km/h，抬右脚刹车（不放在油门上），踩左脚离合，由3挡换至2挡，抬左脚离合，找点，到点后，踩左脚离合带踩右脚刹车停车，迅速空挡，松左脚离合，不松刹车，检查边线距离，大于50cm扣100‘，大于30cm扣10’，车身出线扣100‘，车轮压线扣100’；若过大，进行二次停车，踩左脚离合，挂1档，慢抬离合，抬至半联动时松右脚刹车（不放在油门上），继续行驶平稳时应松开左脚离合，至车辆平稳后再踩刹车找点，到点之后踩左脚离合带踩右脚刹车停车，迅速空挡，松左脚离合，无问题后打右转向灯，3s后拉手刹交卷，向内转动钥匙熄火，解安全带，开门下车关好门，熄火后15s内未下车考试结束数据丢失。 考试线路 附 本文作者：MY知北 关于博主：评论和私信会在第一时间回复。或者直接私信我。 版权声明：本博客所有文章除特别声明外，均采用 BY-NC-SA 许可协议。转载请注明出处！]]></summary></entry></feed>

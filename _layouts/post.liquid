@@ -19,9 +19,13 @@ layout: default
     <p class="post-meta">
       Created on {{ page.date | date: '%B %d, %Y' }}
       {% if page.author %}by {{ page.author }}{% endif %}
-      {% assign last_date = page.last_modified_at | default: page.last_updated %}
-      {% if last_date %}, last updated on {{ last_date | date: '%B %d, %Y' }}{% endif %}
+      {% if page.last_updated %}, last updated on {{ page.last_updated | date: '%B %d, %Y' }}{% endif %}
       {% if page.meta %}• {{ page.meta }}{% endif %}
+      {% if url_beginning == '/blog/' %}
+        <span id="busuanzi_container_page_pv" style="margin-left: 8px;">
+          • <i class="fa-solid fa-eye fa-sm"></i> <span id="busuanzi_value_page_pv"></span> views
+        </span>
+      {% endif %}
     </p>
     <p class="post-tags">
       {% if url_beginning == '/blog/' %}

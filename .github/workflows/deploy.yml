@@ -93,7 +93,12 @@ jobs:
           sudo apt-get update && sudo apt-get install -y imagemagick
           pip3 install --upgrade nbconvert
           export JEKYLL_ENV=production
-          bundle exec jekyll build
+          echo "url: https://myzhibei.github.io" > _config_production.yml
+          bundle exec jekyll build --config _config.yml,_config_production.yml
+      - name: Verify sitemap 🔍
+        run: |
+          test -f _site/sitemap.xml || (echo "sitemap.xml not found" && exit 1)
+          ! grep -q 'localhost' _site/sitemap.xml || (echo "sitemap contains localhost URLs" && exit 1)
       - name: Purge unused CSS 🧹
         run: |
           npm install -g purgecss
