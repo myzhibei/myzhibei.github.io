@@ -1,6 +1,6 @@
 # Shijie Peng - Academic Website
 
-This is the academic website of Shijie Peng, PhD student in Computer Science at the University of Chinese Academy of Sciences, currently visiting at the University of Pennsylvania DSL.
+This is the academic website of Shijie Peng, PhD student in Computer Science at the University of Chinese Academy of Sciences.
 
 ## About
 
@@ -15,7 +15,6 @@ This website is built using the [al-folio](https://github.com/alshedivat/al-foli
 ## Key Publications
 
 - **FlexPipe**: Adapting Dynamic LLM Serving Through Inflight Pipeline Refactoring in Fragmented Serverless Clusters (EuroSys 2026)
-- **Understanding Diffusion Model Serving in Production**: A Top-Down Analysis of Workload, Scheduling, and Resource Efficiency (SoCC 2025)
 - **Quart**: Latency-Aware FaaS System for Pipelining Large Model Inference (ICDCS 2024)
 
 ## Website Features
