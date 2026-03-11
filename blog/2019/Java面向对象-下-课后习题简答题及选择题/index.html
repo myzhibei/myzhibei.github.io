@@ -1,0 +1,95 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta name="google-site-verification" content="N6hUw9yhBc1nlEIz8K4CClCoNO7X6V2njabf8_d2eAo"> <meta http-equiv="Permissions-Policy" content="interest-cohort=()"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Java面向对象（下）课后习题简答题及选择题 | Shijie Peng(彭士杰) </title> <meta name="author" content="Shijie Peng"> <meta name="description" content="PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration. "> <meta name="keywords" content="Shijie Peng, UCAS, SIAT, Chinese Academy of Sciences, machine learning systems, cloud computing, cloud-edge collaboration, inference systems"> <meta property="og:site_name" content="Shijie Peng(彭士杰)"> <meta property="og:type" content="article"> <meta property="og:title" content="Shijie Peng(彭士杰) | Java面向对象（下）课后习题简答题及选择题"> <meta property="og:url" content="https://myzhibei.github.io/blog/2019/Java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1-%E4%B8%8B-%E8%AF%BE%E5%90%8E%E4%B9%A0%E9%A2%98%E7%AE%80%E7%AD%94%E9%A2%98%E5%8F%8A%E9%80%89%E6%8B%A9%E9%A2%98/"> <meta property="og:description" content="PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration. "> <meta property="og:locale" content="en"> <meta name="twitter:card" content="summary"> <meta name="twitter:title" content="Java面向对象（下）课后习题简答题及选择题"> <meta name="twitter:description" content="PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration. "> <script type="application/ld+json">
+    {
+        "author":
+        {
+            "@type": "Person",
+            "name": "Shijie Peng"
+        },
+        "url": "https://myzhibei.github.io/blog/2019/Java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1-%E4%B8%8B-%E8%AF%BE%E5%90%8E%E4%B9%A0%E9%A2%98%E7%AE%80%E7%AD%94%E9%A2%98%E5%8F%8A%E9%80%89%E6%8B%A9%E9%A2%98/",
+        "@type": "BlogPosting",
+        "description": "PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration.
+",
+        "headline": "Java面向对象（下）课后习题简答题及选择题",
+        
+        "sameAs": ["https://github.com/myzhibei","https://scholar.google.com/citations?user=jRdDabUAAAAJ"],
+        
+        "name": "Shijie Peng",
+        "@context": "https://schema.org"
+    }
+  </script> <link rel="stylesheet" href="/assets/css/bootstrap.min.css?a4b3f509e79c54a512b890d73235ef04"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="/assets/css/academicons.min.css?f0b7046b84e425c55f3463ac249818f5"> <link defer rel="stylesheet" href="/assets/css/scholar-icons.css?62b2ac103a88034e6882a5be5f3e2772"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Shadows+Into+Light|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="/assets/img/site-icon.svg?157697c96fe5a56cccc13ff3c52574f7"> <link rel="stylesheet" href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e"> <link rel="canonical" href="https://myzhibei.github.io/blog/2019/Java%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1-%E4%B8%8B-%E8%AF%BE%E5%90%8E%E4%B9%A0%E9%A2%98%E7%AE%80%E7%AD%94%E9%A2%98%E5%8F%8A%E9%80%89%E6%8B%A9%E9%A2%98/"> <script src="/assets/js/theme.js?a81d82887dd692e91686b43de4542f18"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav sticky-bottom-footer"> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Shijie Peng(彭士杰) </a> <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse text-right" id="navbarNav"> <ul class="navbar-nav ml-auto flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/publications/">Publications </a> </li> <li class="nav-item"> <button id="search-toggle" title="Search" onclick="openSearchModal()"> <span class="nav-link">ctrl k <i class="ti ti-search"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" title="Change theme"> <i class="ti ti-sun-moon" id="light-toggle-system"></i> <i class="ti ti-moon-filled" id="light-toggle-dark"></i> <i class="ti ti-sun-filled" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Java面向对象（下）课后习题简答题及选择题</h1> <p class="post-meta"> Created on October 08, 2019 by Shijie Peng <span id="busuanzi_container_page_pv" style="margin-left: 8px;"> • <i class="fa-solid fa-eye fa-sm"></i> <span id="busuanzi_value_page_pv"></span> views </span> </p> <p class="post-tags"> <a href="/blog/2019"> <i class="fa-solid fa-calendar fa-sm"></i> 2019 </a>   ·   <a href="/blog/tag/python"> <i class="fa-solid fa-hashtag fa-sm"></i> python</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <h4 id="教材java面向对象程序设计第二版-袁绍欣-第六章111"> <a id="Java__111_0"></a>教材Java面向对象程序设计(第二版) 袁绍欣 第六章1~11</h4> <h4 id="1-this和super各有几种用法"> <a id="1_thissuper_1"></a>1. this和super各有几种用法？</h4> <p>1）super关键字：我们可以通过super关键字来实现对父类成员的访问，用来引用当前对象的父类。this关键字：指向自己的引用。<br> 2）形参与成员名字重名，用 this 来区分；子类和父类中的成员重名，使用super<br> 3）引用构造函数`</p> <h4 id="2-类对象实例化的具体过程是什么"> <a id="2__5"></a>2. 类对象实例化的具体过程是什么？</h4> <p>1）子类在构造对象时候，必须访问父类的构造函数，为了完成这个必须的动作，就在子类的构造函数中加入了super()语句。<br> 2)如果父类中没有定义空参数构造函数，那么子类的构造函数必须用super明确要调用父类中哪个构造函数，否则子类无法完成初始化。<br> 3）在构造函数生效之前，程序会先执行静态的成员活方法的初始化。</p> <h4 id="3-类的域变量和方法中定义的局部变量在初始化上有何区别"> <a id="3__9"></a>3. 类的域变量和方法中定义的局部变量在初始化上有何区别？</h4> <p>类的域变量在类实例化的时候进行初始化，方法中的局部变量在方法内部显式初始化，在调用到该方法时，才会为该变量创建。</p> <h4 id="4-模仿形成抽象类的过程自选角度形成一个自己的抽象类并在程序的类继承和引用中体现抽象类的作用"> <a id="4__11"></a>4. 模仿形成抽象类的过程，自选角度，形成一个自己的抽象类，并在程序的类继承和引用中体现抽象类的作用。</h4> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code&gt;abstract class Animal {  //抽象类中可以有非抽象方法，也可以有成员变量
+	  private int a = 10;
+	  public abstract void bark();      //如果没有此抽象方法，但是class前有absract修饰，也是抽象类，也不能实例化
+	  public void say() {            //普通成员方法
+	    System.out.println("我是抽象类中的非抽象方法，此抽象类中的私有成员变量a= " + a);
+	  }
+	  public int getA() {
+	    return a;
+	  }
+	  public void setA(int a) {
+	    this.a = a;
+	  }
+	}
+	class Dog extends Animal{
+	  public void bark() {        //子类实现Animal的抽象方法
+	    System.out.println("汪汪~汪汪~");   
+	    System.out.println("我是子类，只有通过super.getA()调用父类的私有变量a：" + super.getA());  
+	  }
+	}
+	public class Test {
+	  public static void main(String[] args) {
+	    Dog dog = new Dog();
+	    dog.say();    //子类继承调用Animal的普通成员方法
+	    dog.bark();    //子类调用已经实现过的方法
+	  }
+	}
+&lt;/code&gt;
+</code></pre></div></div> <h4 id="5-接口有什么用自己定义一个接口并给出实现类和使用类"> <a id="5__42"></a>5. 接口有什么用？自己定义一个接口，并给出实现类和使用类。</h4> <p>实现多重继承；接口是一种标准，使用者按照接口使用，实验者按照接口实现，当实现者内部发生变化时，只要接口不变，使用者就不必更改代码；扩展性强。</p> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code&gt;interface A{    // 定义接口A
+    public abstract void print() ;    // 定义抽象方法print()
+}
+class B implements A {    // 定义子类，实现接口
+    public void print(){        // 覆写抽象方法
+        System.out.println("Hello World!!!") ;
+    }
+}
+public class Test{
+    public static void main(String args[]){
+        A a = new B() ;        // 通过子类为抽象类实例化
+        a.print() ;
+    }
+}
+&lt;/code&gt;
+</code></pre></div></div> <h4 id="6-抽象类与接口的异同点"> <a id="6__62"></a>6. 抽象类与接口的异同点？</h4> <p>相同点：<br> 1）不能直接实例化，如果要实例化，抽象类变量必须指向实现所有抽象方法的子类对象，接口变量必须指向实现所有接口方法的类对象。<br> 2）都有自己的声明，可以引用子类或实现类对象<br> 不同点 ：<br> 1）抽象类可以有域变量，接口没有，只能是静态常量。<br> 2）抽象类可以有具体方法；接口全是抽象方法。<br> 3）抽象类实现靠子类继承，接口靠实现类。</p> <h5 id="7-引用比较方法有哪些"> <a id="7__70"></a>7. 引用比较方法有哪些?</h5> <p>==<br> equlas<br> instanceof</p> <h4 id="8-内部类的作用什么情况下使用匿名内部类"> <a id="8__74"></a>8. 内部类的作用？什么情况下使用匿名内部类？</h4> <p>作用：<br> 1）内部类可以很好的实现隐藏。一般的非内部类，是不允许有 private 与protected权限的，但内部类可以。<br> 2）内部类拥有外围类的所有元素的访问权限。<br> 3）可是实现多重继承。<br> 4）可以避免修改接口而实现同一个类中两种同名方法的调用。<br> 匿名内部类：<br> 匿名内部类是内部类的一种特殊情况。它只有一个实例,而且没有引用。所以，一般在能用内部类实现，但是实例只用一次的情况下使用它（可以减少资源开销）。</p> <h4 id="9-不上机判断下面程序的输岀结果"> <a id="9__82"></a>9. 不上机，判断下面程序的输岀结果。</h4> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code&gt;class X {
+	Y b = new Y();
+	X() {
+		System.out.println("X");
+	}
+}
+class Y {
+	Y() {
+		System.out.println("Y");
+	}
+}
+public class Z extends X{
+	Y y = new Y();
+	Z() {
+		System.out.println("Z");
+	}
+	public static void main(String[] args) {
+		new Z();
+	}
+}
+&lt;/code&gt;
+</code></pre></div></div> <p>A. Z 　　　B. YZ 　　　C. XYZ　　　 D. YXYZ</p> <p>答案：D<br> 执行new Z();后，进入Z类，首先实现父类X，实现X时又由于Y b = new Y();先实现Y，于是输出Y，完毕后回到X，输出X，再回到Z类，执行Y y = new Y();输出Y，最后输出Z。</p> <h4 id="10-什么是数据隐藏如何证明子类对父类同名方法进行重新定义只能是方法的覆盖而不是隐藏"> <a id="10__112"></a>10. 什么是数据隐藏？如何证明子类对父类同名方法进行重新定义，只能是方法的覆盖而不是隐藏？</h4> <p>1）在子类对父类的继承中，如果子类的成员变量和父类的成员变量同名，此时称为子类隐藏（override）了父类的成员变量。<br> 2）覆盖：子类重写父类的方法，要求方法名和参数类型完全一样(参数不能是子类)，返回值和异常比父类小或者相同(即为父类的子类)，访问修饰符比父类大或者相同。<br> 隐藏：父类和子类拥有相同名字的属性或者方法（ 方法隐藏只有一种形式，就是父类和子类存在相同的静态方法）时，父类的同名的属性或者方法形式上不见了，实际是还是存在的。</p> <h4 id="11-a1a2分别是具体类a的子类a3为a1的子类a1a2之间的关系为平行类-如图615所示下面的代码为连续的程序片段请问哪些是正确的"> <a id="11_A1A2AA3A1A1A2_615_117"></a>11. A1、A2分别是具体类A的子类，A3为A1的子类，A1、A2之间的关系为平行类， 如图6.15所示。下面的代码为连续的程序片段，请问哪些是正确的？</h4> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code&gt;A a = new A();
+a = new A1();
+a = new A2();
+a = new A3();
+A1 a1 = new A3 ();
+A3 a3 = a1;           //×
+A2 a2 = new A1();     //×
+a3 = new A2();    
+&lt;/code&gt;
+</code></pre></div></div> </div> </article> <br> <hr> <br> <ul class="list-disc pl-8"></ul> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2025/Serverless-LLM/">Why Pipeline Parallelism Matters for Serverless LLM Inference</a> </li> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2025/FPGA-LLM/">FPGA in the AI Era: From Standalone Struggles to Co-Design Opportunities (Part 1)</a> </li> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2025/Diffusion-Model/">Diffusion Model Serving: Why It Matters for Systems</a> </li> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(LLD)/">HZAU国际影城(HZAU-Cineplex)——软件详细设计说明书(LLD)</a> </li> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E8%AE%A1%E5%88%92(Testing-Plan)/">HZAU国际影城(HZAU-Cineplex)——软件测试计划(Testing-Plan)</a> </li> </div> </div> <footer class="sticky-bottom mt-5" role="contentinfo"> <div class="container"> © Copyright 2026 Shijie Peng. <span style="margin-left: 12px;"> <a href="/feed.xml" title="RSS Feed" style="color: inherit; text-decoration: none;"> <i class="fa-solid fa-square-rss"></i> </a> </span> <span id="busuanzi_container_site_pv" style="margin-left: 12px;"> <i class="fa-solid fa-eye"></i> Total Visits: <span id="busuanzi_value_site_pv"></span> </span> </div> </footer> <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> <script src="/assets/js/bootstrap.bundle.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?a0db7e5d5c70cc3252b3138b0c91dcaf" type="text/javascript"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/js/zoom.js?85ddb88934d28b74e78031fd54cf8308"></script> <script src="/assets/js/no_defer.js?2781658a0a2b13ed609542042a859126"></script> <script defer src="/assets/js/common.js?e0514a05c5c95ac1a93a8dfd5249b92e"></script> <script defer src="/assets/js/copy_code.js?c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?d9f17b6adc2311cbabd747f4538bb15f"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/js/mathjax-setup.js?a5bb4e6a542c546dd929b24b8b236dfd"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script defer src="/assets/js/progress-bar.js?2f30e0e6801ea8f5036fa66e1ab0a71a" type="text/javascript"></script> <script src="/assets/js/vanilla-back-to-top.min.js?f40d453793ff4f64e238e420181a1d17"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/js/search/ninja-keys.min.js?a3446f084dcaecc5f75aa1757d087dcf"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/js/search-setup.js?6c304f7b1992d4b60f7a07956e52f04a"></script> <script src="/assets/js/search-data.js"></script> <script src="/assets/js/shortcut-key.js?6f508d74becd347268a7f822bca7309d"></script> <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> </body> </html>

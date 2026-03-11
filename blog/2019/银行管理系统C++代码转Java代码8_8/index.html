@@ -1,0 +1,684 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta name="google-site-verification" content="N6hUw9yhBc1nlEIz8K4CClCoNO7X6V2njabf8_d2eAo"> <meta http-equiv="Permissions-Policy" content="interest-cohort=()"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> 银行管理系统C++代码转Java代码8_8 | Shijie Peng(彭士杰) </title> <meta name="author" content="Shijie Peng"> <meta name="description" content="PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration. "> <meta name="keywords" content="Shijie Peng, UCAS, SIAT, Chinese Academy of Sciences, machine learning systems, cloud computing, cloud-edge collaboration, inference systems"> <meta property="og:site_name" content="Shijie Peng(彭士杰)"> <meta property="og:type" content="article"> <meta property="og:title" content="Shijie Peng(彭士杰) | 银行管理系统C++代码转Java代码8_8"> <meta property="og:url" content="https://myzhibei.github.io/blog/2019/%E9%93%B6%E8%A1%8C%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FC++%E4%BB%A3%E7%A0%81%E8%BD%ACJava%E4%BB%A3%E7%A0%818_8/"> <meta property="og:description" content="PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration. "> <meta property="og:locale" content="en"> <meta name="twitter:card" content="summary"> <meta name="twitter:title" content="银行管理系统C++代码转Java代码8_8"> <meta name="twitter:description" content="PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration. "> <script type="application/ld+json">
+    {
+        "author":
+        {
+            "@type": "Person",
+            "name": "Shijie Peng"
+        },
+        "url": "https://myzhibei.github.io/blog/2019/%E9%93%B6%E8%A1%8C%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FC++%E4%BB%A3%E7%A0%81%E8%BD%ACJava%E4%BB%A3%E7%A0%818_8/",
+        "@type": "BlogPosting",
+        "description": "PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration.
+",
+        "headline": "银行管理系统C++代码转Java代码8_8",
+        
+        "sameAs": ["https://github.com/myzhibei","https://scholar.google.com/citations?user=jRdDabUAAAAJ"],
+        
+        "name": "Shijie Peng",
+        "@context": "https://schema.org"
+    }
+  </script> <link rel="stylesheet" href="/assets/css/bootstrap.min.css?a4b3f509e79c54a512b890d73235ef04"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="/assets/css/academicons.min.css?f0b7046b84e425c55f3463ac249818f5"> <link defer rel="stylesheet" href="/assets/css/scholar-icons.css?62b2ac103a88034e6882a5be5f3e2772"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Shadows+Into+Light|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="/assets/img/site-icon.svg?157697c96fe5a56cccc13ff3c52574f7"> <link rel="stylesheet" href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e"> <link rel="canonical" href="https://myzhibei.github.io/blog/2019/%E9%93%B6%E8%A1%8C%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FC++%E4%BB%A3%E7%A0%81%E8%BD%ACJava%E4%BB%A3%E7%A0%818_8/"> <script src="/assets/js/theme.js?a81d82887dd692e91686b43de4542f18"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav sticky-bottom-footer"> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Shijie Peng(彭士杰) </a> <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse text-right" id="navbarNav"> <ul class="navbar-nav ml-auto flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/publications/">Publications </a> </li> <li class="nav-item"> <button id="search-toggle" title="Search" onclick="openSearchModal()"> <span class="nav-link">ctrl k <i class="ti ti-search"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" title="Change theme"> <i class="ti ti-sun-moon" id="light-toggle-system"></i> <i class="ti ti-moon-filled" id="light-toggle-dark"></i> <i class="ti ti-sun-filled" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">银行管理系统C++代码转Java代码8_8</h1> <p class="post-meta"> Created on October 09, 2019 by Shijie Peng <span id="busuanzi_container_page_pv" style="margin-left: 8px;"> • <i class="fa-solid fa-eye fa-sm"></i> <span id="busuanzi_value_page_pv"></span> views </span> </p> <p class="post-tags"> <a href="/blog/2019"> <i class="fa-solid fa-calendar fa-sm"></i> 2019 </a>   ·   <a href="/blog/tag/python"> <i class="fa-solid fa-hashtag fa-sm"></i> python</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <p>C++代码源自《C++语言程序设计(第4版)》(清华大学计算机系列教材) 郑莉, 董渊, 何江舟 清华大学出版社</p> <p><strong>8_8</strong></p> <h4 id="c源码"> <a id="C_3"></a>C++源码</h4> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-cpp"&gt;//8_8.cpp
+#include "account.cpp"
+#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+	Date date(2008, 11, 1);	//起始日期
+	//建立几个账户
+	SavingsAccount sa1(date, "S3755217", 0.015);
+	SavingsAccount sa2(date, "02342342", 0.015);
+	CreditAccount ca(date, "C5392394", 10000, 0.0005, 50);
+	Account *accounts[] = { &amp;sa1, &amp;sa2, &amp;ca };
+	const int n = sizeof(accounts) / sizeof(Account*);	//账户总数
+
+	cout &lt;&lt; "(d)deposit (w)withdraw (s)show (c)change day (n)next month (e)exit" &lt;&lt; endl;
+	char cmd;
+	do {
+		//显示日期和总金额
+		date.show();
+		cout &lt;&lt; "\tTotal: " &lt;&lt; Account::getTotal() &lt;&lt; "\tcommand&gt; ";
+
+		int index, day;
+		double amount;
+		string desc;
+
+		cin &gt;&gt; cmd;
+		switch (cmd) {
+		case 'd':	//存入现金
+			cin &gt;&gt; index &gt;&gt; amount;
+			getline(cin, desc);
+			accounts[index]-&gt;deposit(date, amount, desc);
+			break;
+		case 'w':	//取出现金
+			cin &gt;&gt; index &gt;&gt; amount;
+			getline(cin, desc);
+			accounts[index]-&gt;withdraw(date, amount, desc);
+			break;
+		case 's':	//查询各账户信息
+			for (int i = 0; i &lt; n; i++) {
+				cout &lt;&lt; "[" &lt;&lt; i &lt;&lt; "] ";
+				accounts[i]-&gt;show();
+				cout &lt;&lt; endl;
+			}
+			break;
+		case 'c':	//改变日期
+			cin &gt;&gt; day;
+			if (day &lt; date.getDay())
+				cout &lt;&lt; "You cannot specify a previous day";
+			else if (day &gt; date.getMaxDay())
+				cout &lt;&lt; "Invalid day";
+			else
+				date = Date(date.getYear(), date.getMonth(), day);
+			break;
+		case 'n':	//进入下个月
+			if (date.getMonth() == 12)
+				date = Date(date.getYear() + 1, 1, 1);
+			else
+				date = Date(date.getYear(), date.getMonth() + 1, 1);
+			for (int i = 0; i &lt; n; i++)
+				accounts[i]-&gt;settle(date);
+			break;
+		}
+	} while (cmd != 'e');
+	return 0;
+}
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-cpp"&gt;//account.cpp
+#include "account.h"
+#include &lt;cmath&gt;
+#include &lt;iostream&gt;
+using namespace std;
+
+double Account::total = 0;
+
+//Account类的实现
+Account::Account(const Date &amp;date, const string &amp;id)
+	: id(id), balance(0) {
+	date.show();
+	cout &lt;&lt; "\t#" &lt;&lt; id &lt;&lt; " created" &lt;&lt; endl;
+}
+
+void Account::record(const Date &amp;date, double amount, const string &amp;desc) {
+	amount = floor(amount * 100 + 0.5) / 100;	//保留小数点后两位
+	balance += amount;
+	total += amount;
+	date.show();
+	cout &lt;&lt; "\t#" &lt;&lt; id &lt;&lt; "\t" &lt;&lt; amount &lt;&lt; "\t" &lt;&lt; balance &lt;&lt; "\t" &lt;&lt; desc &lt;&lt; endl;
+}
+
+void Account::show() const {
+	cout &lt;&lt; id &lt;&lt; "\tBalance: " &lt;&lt; balance;
+}
+
+void Account::error(const string &amp;msg) const {
+	cout &lt;&lt; "Error(#" &lt;&lt; id &lt;&lt; "): " &lt;&lt; msg &lt;&lt; endl;
+}
+
+//SavingsAccount类相关成员函数的实现
+SavingsAccount::SavingsAccount(const Date &amp;date, const string &amp;id, double rate)
+	: Account(date, id), rate(rate), acc(date, 0) { }
+
+void SavingsAccount::deposit(const Date &amp;date, double amount, const string &amp;desc) {
+	record(date, amount, desc);
+	acc.change(date, getBalance());
+}
+
+void SavingsAccount::withdraw(const Date &amp;date, double amount, const string &amp;desc) {
+	if (amount &gt; getBalance()) {
+		error("not enough money");
+	} else {
+		record(date, -amount, desc);
+		acc.change(date, getBalance());
+	}
+}
+
+void SavingsAccount::settle(const Date &amp;date) {
+	if (date.getMonth() == 1) {	//每年的一月计算一次利息
+		double interest = acc.getSum(date) * rate
+			/ (date - Date(date.getYear() - 1, 1, 1));
+		if (interest != 0)
+			record(date, interest, "interest");
+		acc.reset(date, getBalance());
+	}
+}
+
+//CreditAccount类相关成员函数的实现
+CreditAccount::CreditAccount(const Date&amp; date, const string&amp; id, double credit, double rate, double fee)
+	: Account(date, id), credit(credit), rate(rate), fee(fee), acc(date, 0) { }
+
+void CreditAccount::deposit(const Date &amp;date, double amount, const string &amp;desc) {
+	record(date, amount, desc);
+	acc.change(date, getDebt());
+}
+
+void CreditAccount::withdraw(const Date &amp;date, double amount, const string &amp;desc) {
+	if (amount - getBalance() &gt; credit) {
+		error("not enough credit");
+	} else {
+		record(date, -amount, desc);
+		acc.change(date, getDebt());
+	}
+}
+
+void CreditAccount::settle(const Date &amp;date) {
+	double interest = acc.getSum(date) * rate;
+	if (interest != 0)
+		record(date, interest, "interest");
+	if (date.getMonth() == 1)
+		record(date, -fee, "annual fee");
+	acc.reset(date, getDebt());
+}
+
+void CreditAccount::show() const {
+	Account::show();
+	cout &lt;&lt; "\tAvailable credit:" &lt;&lt; getAvailableCredit();
+}
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-cpp"&gt;//account.h
+#ifndef __ACCOUNT_H__
+#define __ACCOUNT_H__
+#include "date.cpp"
+#include "accumulator.h"
+#include &lt;string&gt;
+
+class Account { //账户类
+private:
+	std::string id;	//帐号
+	double balance;	//余额
+	static double total; //所有账户的总金额
+protected:
+	//供派生类调用的构造函数，id为账户
+	Account(const Date &amp;date, const std::string &amp;id);
+	//记录一笔帐，date为日期，amount为金额，desc为说明
+	void record(const Date &amp;date, double amount, const std::string &amp;desc);
+	//报告错误信息
+	void error(const std::string &amp;msg) const;
+public:
+	const std::string &amp;getId() const { return id; }
+	double getBalance() const { return balance; }
+	static double getTotal() { return total; }
+	//存入现金，date为日期，amount为金额，desc为款项说明
+	virtual void deposit(const Date &amp;date, double amount, const std::string &amp;desc) = 0;
+	//取出现金，date为日期，amount为金额，desc为款项说明
+	virtual void withdraw(const Date &amp;date, double amount, const std::string &amp;desc) = 0;
+	//结算（计算利息、年费等），每月结算一次，date为结算日期
+	virtual void settle(const Date &amp;date) = 0;
+	//显示账户信息
+	virtual void show() const;
+};
+
+class SavingsAccount : public Account { //储蓄账户类
+private:
+	Accumulator acc;	//辅助计算利息的累加器
+	double rate;		//存款的年利率
+public:
+	//构造函数
+	SavingsAccount(const Date &amp;date, const std::string &amp;id, double rate);
+	double getRate() const { return rate; }
+	virtual void deposit(const Date &amp;date, double amount, const std::string &amp;desc);
+	virtual void withdraw(const Date &amp;date, double amount, const std::string &amp;desc);
+	virtual void settle(const Date &amp;date);
+};
+
+class CreditAccount : public Account { //信用账户类
+private:
+	Accumulator acc;	//辅助计算利息的累加器
+	double credit;		//信用额度
+	double rate;		//欠款的日利率
+	double fee;			//信用卡年费
+
+	double getDebt() const {	//获得欠款额
+		double balance = getBalance();
+		return (balance &lt; 0 ? balance : 0);
+	}
+public:
+	//构造函数
+	CreditAccount(const Date &amp;date, const std::string &amp;id, double credit, double rate, double fee);
+	double getCredit() const { return credit; }
+	double getRate() const { return rate; }
+	double getFee() const { return fee; }
+	double getAvailableCredit() const {	//获得可用信用
+		if (getBalance() &lt; 0)
+			return credit + getBalance();
+		else
+			return credit;
+	}
+	virtual void deposit(const Date &amp;date, double amount, const std::string &amp;desc);
+	virtual void withdraw(const Date &amp;date, double amount, const std::string &amp;desc);
+	virtual void settle(const Date &amp;date);
+	virtual void show() const;
+};
+
+#endif //__ACCOUNT_H__
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-cpp"&gt;//date.cpp
+#include "date.h"
+#include &lt;iostream&gt;
+#include &lt;cstdlib&gt;
+using namespace std;
+
+namespace {	//namespace使下面的定义只在当前文件中有效
+	//存储平年中某个月1日之前有多少天，为便于getMaxDay函数的实现，该数组多出一项
+	const int DAYS_BEFORE_MONTH[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+}
+
+Date::Date(int year, int month, int day) : year(year), month(month), day(day) {
+	if (day &lt;= 0 || day &gt; getMaxDay()) {
+		cout &lt;&lt; "Invalid date: ";
+		show();
+		cout &lt;&lt; endl;
+		exit(1);
+	}
+	int years = year - 1;
+	totalDays = years * 365 + years / 4 - years / 100 + years / 400
+		+ DAYS_BEFORE_MONTH[month - 1] + day;
+	if (isLeapYear() &amp;&amp; month &gt; 2) totalDays++;
+}
+
+int Date::getMaxDay() const {
+	if (isLeapYear() &amp;&amp; month == 2)
+		return 29;
+	else
+		return DAYS_BEFORE_MONTH[month]- DAYS_BEFORE_MONTH[month - 1];
+}
+
+void Date::show() const {
+	cout &lt;&lt; getYear() &lt;&lt; "-" &lt;&lt; getMonth() &lt;&lt; "-" &lt;&lt; getDay();
+}
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-cpp"&gt;//date.h
+#ifndef __DATE_H__
+#define __DATE_H__
+
+class Date {	//日期类
+private:
+	int year;		//年
+	int month;		//月
+	int day;		//日
+	int totalDays;	//该日期是从公元元年1月1日开始的第几天
+
+public:
+	Date(int year, int month, int day);	//用年、月、日构造日期
+	int getYear() const { return year; }
+	int getMonth() const { return month; }
+	int getDay() const { return day; }
+	int getMaxDay() const;		//获得当月有多少天
+	bool isLeapYear() const {	//判断当年是否为闰年
+		return year % 4 == 0 &amp;&amp; year % 100 != 0 || year % 400 == 0;
+	}
+	void show() const;			//输出当前日期
+	//计算两个日期之间差多少天	
+	int operator - (const Date&amp; date) const {
+		return totalDays - date.totalDays;
+	}
+};
+
+#endif //__DATE_H__
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-cpp"&gt;//accumulator.h
+#ifndef __ACCUMULATOR_H__
+#define __ACCUMULATOR_H__
+#include "date.h"
+
+class Accumulator {	//将某个数值按日累加
+private:
+	Date lastDate;	//上次变更数值的时期
+	double value;	//数值的当前值
+	double sum;		//数值按日累加之和
+public:
+	//构造函数，date为开始累加的日期，value为初始值
+	Accumulator(const Date &amp;date, double value)
+		: lastDate(date), value(value), sum(0) { }
+
+	//获得到日期date的累加结果
+	double getSum(const Date &amp;date) const {
+		return sum + value * (date - lastDate);
+	}
+
+	//在date将数值变更为value
+	void change(const Date &amp;date, double value) {
+		sum = getSum(date);
+		lastDate = date;
+		this-&gt;value = value;
+	}
+
+	//初始化，将日期变为date，数值变为value，累加器清零
+	void reset(const Date &amp;date, double value) {
+		lastDate = date;
+		this-&gt;value = value;
+		sum = 0;
+	}
+};
+
+#endif //__ACCUMULATOR_H__
+
+&lt;/code&gt;
+</code></pre></div></div> <h4 id="c运行结果"> <a id="C_357"></a>C++运行结果</h4> <p><img src="https://img-blog.csdnimg.cn/20191009211203226.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="8_8C++运行结果"></p> <h4 id="java代码"> <a id="Java_359"></a>Java代码</h4> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-java"&gt;//Test.java
+import java.util.Scanner;
+public class Test {
+
+public static void main(String[] args) {
+	Date date=new Date(2008, 11, 1);	//起始日期
+	//建立几个账户
+	SavingsAccount sa1= new SavingsAccount(date, "S3755217", 0.015);
+	SavingsAccount sa2=new SavingsAccount(date, "02342342", 0.015);
+	CreditAccount ca= new CreditAccount(date, "C5392394", 10000, 0.0005, 50);
+	Account accounts[] = { sa1, sa2, ca };
+	final int n = accounts.length;	//账户总数
+
+	System.out.println( "(d)deposit (w)withdraw (s)show (c)change day (n)next month (e)exit" );
+	Scanner sc = new Scanner(System.in);
+	char cmd = '0';
+	do {
+		//显示日期和总金额
+		date.show();
+		System.out.println( "\tTotal: " + Account.getTotal() + "\tcommand&gt; ");
+
+		int index, day;
+		double amount;
+		String desc;
+
+		System.out.println("请输入指令 cmd：");
+		cmd= sc.next().charAt(0);
+		switch (cmd) {
+		case 'd':	//存入现金
+			System.out.println("请输入账户数组下标index：");
+			index=sc.nextInt();
+			System.out.println("请输入存款金额amount：");
+			amount=sc.nextDouble();
+			System.out.println("请输入存款项目名称desc：");
+			desc=sc.nextLine();
+			accounts[index].deposit(date, amount, desc);
+			break;
+		case 'w':	//取出现金
+			System.out.println("请输入账户数组下标index：");
+			index=sc.nextInt();
+			System.out.println("请输入取款金额amount：");
+			amount=sc.nextDouble();
+			System.out.println("请输入取款项目名称desc：");
+			desc=sc.nextLine();
+			accounts[index].withdraw(date, amount, desc);
+			break;
+		case 's':	//查询各账户信息
+			for (int i = 0; i &lt; n; i++) {
+				System.out.print("[" + i + "] ");
+				accounts[i].show();
+				System.out.println();
+			}
+			break;
+		case 'c':	//改变日期
+			System.out.println("请输入日期day：");
+			day=sc.nextInt();
+			if (day &lt; date.getDay())
+				System.out.println("You cannot specify a previous day");
+			else if (day &gt; date.getMaxDay())
+				System.out.println("Invalid day");
+			else
+				date = new Date(date.getYear(), date.getMonth(), day);
+			break;
+		case 'n':	//进入下个月
+			if (date.getMonth() == 12)
+				date = new Date(date.getYear() + 1, 1, 1);
+			else
+				date = new Date(date.getYear(), date.getMonth() + 1, 1);
+			for (int i = 0; i &lt; n; i++)
+				accounts[i].settle(date);
+			break;
+		}
+	} while (cmd != 'e');
+	sc.close();
+}
+}
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-java"&gt;//Account.java
+public abstract class Account {
+	private String id;	//帐号
+	private double balance;	//余额
+	private static double total=0; //所有账户的总金额
+	final String getId() { return id; }
+	final double getBalance() {	return balance;}
+	static double getTotal() {	return total;}
+
+	protected Account(final Date date, final String id){
+		this.id=id;
+		this.balance=0; 
+		date.show();
+		System.out.println("\t#" + id + "created");
+	}
+
+	protected void record(final Date date, double amount,final String desc) {
+		amount = Math.floor((amount * 100 + 0.5) / 100);// 保留小数点后两位
+		balance += amount;
+		total += amount;
+		date.show();
+		System.out.println("\t#" + id + "\t" + amount + "\t" + balance + "\t" + desc);
+	}
+
+	void show() {
+		System.out.print(id + "\tBalance: " + balance);
+	}
+	//存入现金，date为日期，amount为金额，desc为款项说明
+	abstract void deposit(final Date date, double amount, final String desc);
+		//取出现金，date为日期，amount为金额，desc为款项说明
+	abstract void withdraw(final Date date, double amount, final String desc);
+		//结算（计算利息、年费等），每月结算一次，date为结算日期
+	abstract void settle(final Date date);
+		//显示账户信息
+
+	protected final void error(final String msg)  {
+		System.out.println("Error(#" + id + "): " + msg +"\n");
+	}
+
+}
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-java"&gt;//CreditAccount.java
+public class CreditAccount extends Account {
+	//CreditAccount类相关成员函数的实现//信用账户类
+	private Accumulator acc;	//辅助计算利息的累加器
+	private double credit;		//信用额度
+	private double rate;		//欠款的日利率
+	private double fee;			//信用卡年费
+
+	final private double getDebt()  {	//获得欠款额
+			double balance = getBalance();
+			return (balance &lt; 0 ? balance : 0);
+		}
+	CreditAccount(final Date date, final String id, double credit, double rate, double fee)
+	{	super(date, id);
+		this.credit=credit;
+		this.rate=rate;
+		this.fee=fee;
+		this.acc=new Accumulator(date, 0);
+	}
+		//构造函数
+		final double getCredit()  { return credit; }
+		final double getRate(){ return rate; }
+		final double getFee() { return fee; }
+		final double getAvailableCredit() {	//获得可用信用
+			if (getBalance() &lt; 0) 
+				return credit + getBalance();
+			else
+				return credit;
+		}
+		
+		// 存入现金
+		void deposit(final Date date, double amount,final String desc) {
+			record(date, amount,desc);
+			acc.change(date, getDebt());
+		}
+
+		// 取出现金
+		void withdraw(final Date date, double amount,final String desc) {
+			if (amount - getBalance() &gt; credit) {
+				error("not enough credit");
+			} else {
+				record(date, -amount, desc);
+				acc.change(date, getDebt());
+			}
+		}
+
+		// 结算利息，每年1月1日调用一次该函数
+		void settle(final Date date) {
+			double interest = acc.getSum(date) * rate;
+			if (interest != 0)
+				record(date, interest, "interest");
+			if (date.getMonth() == 1)
+				record(date, -fee, "annual fee");
+			acc.reset(date, getDebt());
+		}
+
+
+	final void show(){
+		super.show();
+		System.out.println("\tAvailable credit:" + getAvailableCredit());
+	}
+
+}
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-java"&gt;//SavingsAccount.java
+public class SavingsAccount extends Account {
+
+	private Accumulator acc;	//辅助计算利息的累加器
+	private double rate;		//存款的年利率
+	final double getRate() { return rate; }
+	// 构造函数
+	SavingsAccount(final Date date, String id, double rate) {
+		super(date, id);
+		this.rate=rate;
+		this.acc=new Accumulator(date, 0);
+	}
+	// 存入现金
+	void deposit(final Date date, double amount,final String desc) {
+		record(date, amount, desc);
+		acc.change(date, getBalance());
+	}
+
+	// 取出现金
+	void withdraw(final Date date, double amount,final String desc) {
+		if (amount &gt; getBalance()) {
+			error("not enough money");
+		} else {
+			record(date, -amount, desc);
+			acc.change(date, getBalance());
+		}
+	}
+
+	// 结算利息，每年1月1日调用一次该函数
+	void settle(final Date date) {
+		if (date.getMonth() == 1) {	//每年的一月计算一次利息
+			double interest = acc.getSum(date) * rate
+				/ (date.getTotalDays() - (new Date(date.getYear() - 1, 1, 1)).getTotalDays());
+			if (interest != 0)
+				record(date, interest, "interest");
+			acc.reset(date, getBalance());
+	}
+
+}}
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-java"&gt;//Date.java
+public class Date {
+	// 存储平年中某个月1日之前有多少天，为便于getMaxDay函数的实现，该数组多出一项
+	final int[] DAYS_BEFORE_MONTH = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+	private int year; // 年
+	private int month; // 月
+	private int day; // 日
+	private int totalDays; // 该日期是从公元元年1月1日开始的第几天
+
+	public Date(int year, int month, int day) {
+		this.year = year;
+		this.month = month;
+		this.day = day;
+		if (day &lt;= 0 || day &gt; getMaxDay()) {
+			System.out.println("Invalid date: ");
+			show();
+			System.out.println();
+			System.exit(1);
+		}
+		int years = year - 1;
+		totalDays = years * 365 + years / 4 - years / 100 + years / 400 + DAYS_BEFORE_MONTH[month - 1] + day;
+		if (isLeapYear() &amp;&amp; month &gt; 2)
+			totalDays++;
+	}// 用年、月、日构造日期
+
+	final int getYear() {
+		return year;
+	}
+	int getTotalDays() {
+		return this.totalDays;
+	}
+
+	final int getMonth() {
+		return month;
+	}
+
+	final int getDay() {
+		return day;
+	}
+
+	final int getMaxDay() {
+			if (isLeapYear() &amp;&amp; month == 2)
+				return 29;
+			else
+				return DAYS_BEFORE_MONTH[month]- DAYS_BEFORE_MONTH[month - 1];
+		}; // 获得当月有多少天
+
+	final boolean isLeapYear() {	//判断当年是否为闰年
+			return year % 4 == 0 &amp;&amp; year % 100 != 0 || year % 400 == 0;
+		}
+
+	final void show() {
+		System.out.print( getYear()+ "-" + getMonth()+"-" + getDay());//输出当前日期
+	}
+		//计算两个日期之间差多少天	
+
+}
+
+&lt;/code&gt;
+</code></pre></div></div> <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;code class="prism language-java"&gt;//Accumulator.java
+public class Accumulator {
+//将某个数值按日累加
+	private Date lastDate; // 上次变更数值的时期
+	private double value; // 数值的当前值
+	private double sum; // 数值按日累加之和
+	// 构造函数，date为开始累加的日期，value为初始值
+
+	Accumulator(final Date date, double value) {
+		this.lastDate = date;
+		this.value = value;
+		this.sum = 0;
+	}
+
+	// 获得到日期date的累加结果
+	final double getSum(final Date date) {
+		return sum + value * (date.getTotalDays()-lastDate.getTotalDays());
+	}
+
+	// 在date将数值变更为value
+	void change(final Date date, double value) {
+		sum = getSum(date);
+		lastDate = date;
+		this.value = value;
+	}
+
+	// 初始化，将日期变为date，数值变为value，累加器清零
+	void reset(final Date date, double value) {
+		lastDate = date;
+		this.value = value;
+		sum = 0;
+	}
+}
+
+&lt;/code&gt;
+</code></pre></div></div> <h4 id="java运行结果"> <a id="Java_692"></a>Java运行结果</h4> <p><img src="https://img-blog.csdnimg.cn/20191015225736334.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQzNjYxNTU4,size_16,color_FFFFFF,t_70" alt="8_8Java运行结果"></p> </div> </article> <br> <hr> <br> <ul class="list-disc pl-8"></ul> <h2 class="text-3xl font-semibold mb-4 mt-12">Enjoy Reading This Article?</h2> <p class="mb-2">Here are some more articles you might like to read next:</p> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2025/Serverless-LLM/">Why Pipeline Parallelism Matters for Serverless LLM Inference</a> </li> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2025/FPGA-LLM/">FPGA in the AI Era: From Standalone Struggles to Co-Design Opportunities (Part 1)</a> </li> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2025/Diffusion-Model/">Diffusion Model Serving: Why It Matters for Systems</a> </li> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E4%B9%A6(LLD)/">HZAU国际影城(HZAU-Cineplex)——软件详细设计说明书(LLD)</a> </li> <li class="my-2"> <a class="text-pink-700 underline font-semibold hover:text-pink-800" href="/blog/2020/HZAU%E5%9B%BD%E9%99%85%E5%BD%B1%E5%9F%8E(HZAU-Cineplex)-%E8%BD%AF%E4%BB%B6%E6%B5%8B%E8%AF%95%E8%AE%A1%E5%88%92(Testing-Plan)/">HZAU国际影城(HZAU-Cineplex)——软件测试计划(Testing-Plan)</a> </li> </div> </div> <footer class="sticky-bottom mt-5" role="contentinfo"> <div class="container"> © Copyright 2026 Shijie Peng. <span style="margin-left: 12px;"> <a href="/feed.xml" title="RSS Feed" style="color: inherit; text-decoration: none;"> <i class="fa-solid fa-square-rss"></i> </a> </span> <span id="busuanzi_container_site_pv" style="margin-left: 12px;"> <i class="fa-solid fa-eye"></i> Total Visits: <span id="busuanzi_value_site_pv"></span> </span> </div> </footer> <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> <script src="/assets/js/bootstrap.bundle.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?a0db7e5d5c70cc3252b3138b0c91dcaf" type="text/javascript"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/js/zoom.js?85ddb88934d28b74e78031fd54cf8308"></script> <script src="/assets/js/no_defer.js?2781658a0a2b13ed609542042a859126"></script> <script defer src="/assets/js/common.js?e0514a05c5c95ac1a93a8dfd5249b92e"></script> <script defer src="/assets/js/copy_code.js?c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?d9f17b6adc2311cbabd747f4538bb15f"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/js/mathjax-setup.js?a5bb4e6a542c546dd929b24b8b236dfd"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script defer src="/assets/js/progress-bar.js?2f30e0e6801ea8f5036fa66e1ab0a71a" type="text/javascript"></script> <script src="/assets/js/vanilla-back-to-top.min.js?f40d453793ff4f64e238e420181a1d17"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/js/search/ninja-keys.min.js?a3446f084dcaecc5f75aa1757d087dcf"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/js/search-setup.js?6c304f7b1992d4b60f7a07956e52f04a"></script> <script src="/assets/js/search-data.js"></script> <script src="/assets/js/shortcut-key.js?6f508d74becd347268a7f822bca7309d"></script> <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script> </body> </html>
