@@ -365,6 +365,9 @@ ninja.data = [{
             },},{id: "news-our-paper-flexpipe-has-been-accepted-to-eurosys-26",
           title: 'Our paper “FlexPipe” has been accepted to EuroSys’26!',
           description: "",
+          section: "News",},{id: "news-our-paper-reliefserve-has-been-accepted-to-icpp-26",
+          title: 'Our paper “ReliefServe” has been accepted to ICPP’26!',
+          description: "",
           section: "News",},{
         id: 'social-email',
         title: 'email',

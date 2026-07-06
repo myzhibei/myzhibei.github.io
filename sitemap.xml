@@ -2,11 +2,15 @@
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
 <loc>https://myzhibei.github.io/books/the_godfather/</loc>
-<lastmod>2026-04-27T10:16:02+00:00</lastmod>
+<lastmod>2026-07-06T06:26:50+00:00</lastmod>
 </url>
 <url>
 <loc>https://myzhibei.github.io/news/announcement_flexpipe_eurosys26/</loc>
 <lastmod>2025-09-10T00:00:00+00:00</lastmod>
+</url>
+<url>
+<loc>https://myzhibei.github.io/news/announcement_reliefserve_icpp26/</loc>
+<lastmod>2026-07-06T00:00:00+00:00</lastmod>
 </url>
 <url>
 <loc>https://myzhibei.github.io/blog/2017/%E5%BF%AB%E9%80%9F%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/</loc>
@@ -209,10 +213,10 @@
 </url>
 <url>
 <loc>https://myzhibei.github.io/_pages/</loc>
-<lastmod>2026-04-27T10:15:30+00:00</lastmod>
+<lastmod>2026-07-06T06:25:00+00:00</lastmod>
 </url>
 <url>
 <loc>https://myzhibei.github.io/google3349d5b6927c8d09.html</loc>
-<lastmod>2026-04-27T10:15:30+00:00</lastmod>
+<lastmod>2026-07-06T06:25:01+00:00</lastmod>
 </url>
 </urlset>
