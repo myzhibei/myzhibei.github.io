@@ -1,5 +1,5 @@
 <div class="publications">
-  {% assign selected_pub_keys = "lin2026flexpipe,wu2025rock,lin2025serving,lin2024quart,lin2024plank,peng2024eins" | split: "," %}
+  {% assign selected_pub_keys = "peng2026reliefserve,lin2026flexpipe,lin2026workload,wu2025rock,lin2025serving,lin2024quart,lin2024plank,peng2024eins" | split: "," %}
   {% for pub_key in selected_pub_keys %}
     {% bibliography --group_by none --query @*[key={{ pub_key }}] %}
   {% endfor %}
