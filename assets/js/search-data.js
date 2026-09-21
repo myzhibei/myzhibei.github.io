@@ -368,6 +368,9 @@ ninja.data = [{
           section: "News",},{id: "news-our-paper-reliefserve-has-been-accepted-to-icpp-26",
           title: 'Our paper “ReliefServe” has been accepted to ICPP’26!',
           description: "",
+          section: "News",},{id: "news-our-paper-valve-has-been-conditionally-accepted-to-eurosys-27",
+          title: 'Our paper “Valve” has been conditionally accepted to EuroSys’27!',
+          description: "",
           section: "News",},{
         id: 'social-email',
         title: 'email',
