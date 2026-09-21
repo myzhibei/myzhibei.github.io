@@ -319,6 +319,7 @@ filtered_bibtex_keywords:
     poster,
     preview,
     selected,
+    show_in_publications,
     slides,
     supp,
     video,
