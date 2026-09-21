@@ -2,16 +2,16 @@
 # Site settings
 # -----------------------------------------------------------------------------
 
-title: Shijie Peng(彭士杰) # the website title (if blank, full name will be used instead)
+title: Shijie Peng (彭士杰) # the website title (if blank, full name will be used instead)
 first_name: Shijie
 middle_name: 
 last_name: Peng
 contact_note: >
   PhD student at UCAS and SIAT, CAS. Researching AI systems and efficient model serving.
 description: > # the ">" symbol means to ignore newlines until "footer_text:"
-  PhD student at UCAS and SIAT, CAS. Research interests include machine learning systems, cloud computing, and cloud-edge collaboration.
+  Shijie Peng is a PhD student at UCAS and SIAT, CAS, researching systems for AI, efficient large-model inference, and cloud-edge computing.
 footer_text: >
-keywords: Shijie Peng, UCAS, SIAT, Chinese Academy of Sciences, machine learning systems, cloud computing, cloud-edge collaboration, inference systems
+keywords: Shijie Peng, UCAS, SIAT, Chinese Academy of Sciences, systems for AI, LLM serving, machine learning systems, cloud computing, cloud-edge collaboration, inference systems
 lang: en # the language of your site (for example: en, fr, cn, ru, etc.)
 icon: site-icon.svg # custom favicon in /assets/img/
 

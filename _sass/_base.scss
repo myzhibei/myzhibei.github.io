@@ -924,6 +924,60 @@ footer.sticky-bottom {
   font-size: 24px;
 }
 
+// Compact news presentation on the homepage.
+.news-preview {
+  .table-responsive {
+    overflow: visible;
+  }
+
+  table {
+    margin-bottom: 0.35rem;
+
+    tr {
+      border-bottom: 1px solid var(--global-divider-color);
+    }
+
+    tr:last-child {
+      border-bottom: 0;
+    }
+
+    th,
+    td {
+      padding-bottom: 0.65rem;
+      padding-top: 0.65rem;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--global-text-color-light);
+      font-size: 0.85rem;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+  }
+
+  .news-more {
+    font-size: 0.9rem;
+    margin: 0.25rem 0 1.5rem;
+    text-align: right;
+  }
+}
+
+@media (max-width: 575px) {
+  .news-preview table {
+    th {
+      display: block;
+      padding-bottom: 0;
+      width: auto !important;
+    }
+
+    td {
+      display: block;
+      padding-top: 0.15rem;
+    }
+  }
+}
+
 // Rouge Color Customization
 figure.highlight {
   margin: 0 0 1rem;
